@@ -48,9 +48,10 @@ DARKGRAY  = ( 64,  64,  64)
 GRAY      = (128, 128, 128)
 LIGHTGRAY = (212, 208, 200)
 TEAL      = ( 58, 138, 112)
+YELLOW = ( 231, 182,  40)
 
 class PygButton(object):
-    def __init__(self, rect=None, caption='', bgcolor=LIGHTGRAY, fgcolor=BLACK, font=None, normal=None, down=None, highlight=None):
+    def __init__(self, rect=None, caption='', bgcolor=LIGHTGRAY, fgcolor=YELLOW, font=None, normal=None, down=None, highlight=None):
         """Create a new button object. Parameters:
             rect - The size and position of the button as a pygame.Rect object
                 or 4-tuple of integers.
@@ -205,19 +206,20 @@ class PygButton(object):
 
         # fill background color for all buttons
         self.surfaceNormal.fill(self.bgcolor)
-        self.surfaceDown.fill(TEAL)
-        self.surfaceHighlight.fill(TEAL)
+
+        self.surfaceDown.fill(self.fgcolor)
+        self.surfaceHighlight.fill(self.fgcolor)
 
         # draw caption text for all buttons
         captionSurf = self._font.render(self._caption, True, self.fgcolor, self.bgcolor)
-        captionSurfDown = self._font.render(self._caption, True, self.bgcolor, TEAL)
+        captionSurfDown = self._font.render(self._caption, True, self.bgcolor, sfelf.fgcolor)
         captionRect = captionSurf.get_rect()
         captionRect.center = int(w / 2), int(h / 2)
         self.surfaceNormal.blit(captionSurf, captionRect)
        
 
         # # draw border for normal button
-        pygame.draw.rect(self.surfaceNormal, TEAL, pygame.Rect((0, 0, w, h)), 1) # black border around everything
+        pygame.draw.rect(self.surfaceNormal, self.bgcolor, pygame.Rect((0, 0, w, h)), 1) # black border around everything
         # pygame.draw.rect(self.surfaceNormal, BLACK, pygame.Rect((0, 0, w, h)), 1) # black border around everything
         # pygame.draw.line(self.surfaceNormal, WHITE, (1, 1), (w - 2, 1))
         # pygame.draw.line(self.surfaceNormal, WHITE, (1, 1), (1, h - 2))
@@ -227,7 +229,7 @@ class PygButton(object):
         # pygame.draw.line(self.surfaceNormal, GRAY, (w - 2, 2), (w - 2, h - 2))
 
         # # draw border for down button
-        pygame.draw.rect(self.surfaceDown, TEAL, pygame.Rect((0, 0, w, h)), 0)
+        pygame.draw.rect(self.surfaceDown, self.highlight, pygame.Rect((0, 0, w, h)), 0)
         self.surfaceDown.blit(captionSurfDown, captionRect)
 
         # pygame.draw.rect(self.surfaceDown, BLACK, pygame.Rect((0, 0, w, h)), 1) # black border around everything

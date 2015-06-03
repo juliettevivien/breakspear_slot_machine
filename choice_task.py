@@ -22,16 +22,16 @@ class ChoiceTask():
     screen = pygame.display.set_mode((pygame.display.Info().current_w,pygame.display.Info().current_h))
     screen_width = screen.get_width()
     screen_height = screen.get_height()
-
-    #screen_width = 1000
-    #screen_height = 900
-
+    # screen_width = 900
+    # screen_height = 600
     screen = pygame.display.set_mode((screen_width,screen_height))
 
     center_x = screen_width/2
+    left_x = screen_width/20
+    right_x = screen_width*9/10
     left_center_x = screen_width/4
     right_center_x = 3*screen_width/4
-    top_y = 2*screen_height/5
+    top_y = screen_height/10
     center_y = screen_height/2
     bottom_y = 2*screen_height/3
     banner_y = screen_height/6
@@ -54,10 +54,12 @@ class ChoiceTask():
             self.body = pygame.font.Font('./fonts/OpenSans-Light.ttf',20)
             self.instruction = pygame.font.Font('./fonts/OpenSans.ttf',30)
             self.choice_text = pygame.font.Font('./fonts/OpenSans-Light.ttf',30)
+            pdb.set_trace()
         except:
             self.title = pygame.font.SysFont("Calibri",40)
             self.header = pygame.font.SysFont("Calibri",25)
             self.body = pygame.font.SysFont("Calibri",15)
+            self.button = pygame.font.SysFont("Calibri",25)
 
 
         self.background_color =  ( 232, 236, 237)
@@ -113,13 +115,20 @@ class ChoiceTask():
                     pygame.quit()
                     exit()
                 
-    # Just aesthetics to center text
-    def center_text(self,text,x_offset=0,y_offset=0, center_x=center_x, center_y=center_y):
+    # # Just aesthetics to center text
+    # def center_text(self,text=None,x_offset=0,y_offset=0, center_x=center_x, center_y=center_y):
+    #     textpos = text.get_rect()
+    #     textpos.centerx = center_x+x_offset
+    #     textpos.centery = center_y+y_offset
+    #     self.screen.blit(text,textpos)
+    #     pygame.display.update()
+
+    def center_text(self, text, destsurf,destsurfposx,destsurfposy):
         textpos = text.get_rect()
-        textpos.centerx = center_x+x_offset
-        textpos.centery = center_y+y_offset
+        textpos.centerx = destsurf.centerx+destsurfposx
+        textpos.centery = destsurf.centery+destsurfposy
         self.screen.blit(text,textpos)
-        pygame.display.update()
+  
 
     def text_screen(self,text, wait_time=0, font=None, valign='center', halign='center', maxwidth=int(screen_width*0.9)):
         # Text input should be raw text 

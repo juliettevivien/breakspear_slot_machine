@@ -212,7 +212,7 @@ class PygButton(object):
 
         # draw caption text for all buttons
         captionSurf = self._font.render(self._caption, True, self.fgcolor, self.bgcolor)
-        captionSurfDown = self._font.render(self._caption, True, self.bgcolor, sfelf.fgcolor)
+        captionSurfDown = self._font.render(self._caption, True, self.bgcolor, self.fgcolor)
         captionRect = captionSurf.get_rect()
         captionRect.center = int(w / 2), int(h / 2)
         self.surfaceNormal.blit(captionSurf, captionRect)
@@ -229,7 +229,7 @@ class PygButton(object):
         # pygame.draw.line(self.surfaceNormal, GRAY, (w - 2, 2), (w - 2, h - 2))
 
         # # draw border for down button
-        pygame.draw.rect(self.surfaceDown, self.highlight, pygame.Rect((0, 0, w, h)), 0)
+        # pygame.draw.rect(self.surfaceDown, self.highlight, pygame.Rect((0, 0, w, h)), 0)
         self.surfaceDown.blit(captionSurfDown, captionRect)
 
         # pygame.draw.rect(self.surfaceDown, BLACK, pygame.Rect((0, 0, w, h)), 1) # black border around everything

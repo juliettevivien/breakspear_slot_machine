@@ -43,8 +43,8 @@ class ChoiceTask():
         y = 0
         os.environ['SDL_VIDEO_WINDOW_POS']= '%d,%d' % (x,y) # screen position
 
-        # Access outputfile
-        #of = open(output_file, 'w')
+        # # Access outputfile
+        # of = open(output_file, 'w')
 
         # Define 3 system fonts
         try:
@@ -114,26 +114,27 @@ class ChoiceTask():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-                
-    # # Just aesthetics to center text
-    # def center_text(self,text=None,x_offset=0,y_offset=0, center_x=center_x, center_y=center_y):
-    #     textpos = text.get_rect()
-    #     textpos.centerx = center_x+x_offset
-    #     textpos.centery = center_y+y_offset
-    #     self.screen.blit(text,textpos)
-    #     pygame.display.update()
 
-    def center_text(self, text, destsurf,destsurfposx,destsurfposy):
+    def center_text(self,text=None,x_offset=0,y_offset=0, center_x=center_x, center_y=center_y):
+        textpos = text.get_rect()
+        textpos.centerx = center_x+x_offset
+        textpos.centery = center_y+y_offset
+        self.screen.blit(text,textpos)
+        pygame.display.update()
+
+    def surf_center_text(self, text, destsurf,destsurfposx,destsurfposy):
         textpos = text.get_rect()
         textpos.centerx = destsurf.centerx+destsurfposx
         textpos.centery = destsurf.centery+destsurfposy
         self.screen.blit(text,textpos)
   
 
-    def text_screen(self,text, wait_time=0, font=None, valign='center', halign='center', maxwidth=int(screen_width*0.9)):
+    def text_screen(self,text,wait_time=0, font=None,font_color=None, valign='center', halign='center',x_displacement=0,y_displacement=0, maxwidth=int(screen_width*0.9)):
         # Text input should be raw text 
         if font is None:
             font = self.instruction 
+        if font_color is None:
+            font_color = self.text_color
 
         if len(text) != 0:
             yoffset = int(1.1*font.size(text)[1])
@@ -141,24 +142,24 @@ class ChoiceTask():
             num_lines = int(len(formatted_text)/2)
             
             if valign == 'top':
-                center_y = self.center_y-num_lines*2*yoffset
+                center_y = self.center_y-num_lines*2*yoffset + y_displacement
             elif valign == 'center':
-                center_y = self.center_y
+                center_y = self.center_y + y_displacement
             elif valign == 'bottom':
-                center_y = self.bottom_y-num_lines*yoffset
+                center_y = self.bottom_y-num_lines*yoffset + y_displacement
 
             if halign == 'center':
-                center_x = self.center_x
+                center_x = self.center_x + x_displacement
             elif halign == 'right':
-                center_x = self.right_center_x
+                center_x = self.right_center_x + x_displacement
             elif halign == 'left':
-                center_x = self.left_center_x
+                center_x = self.left_center_x + x_displacement
 
             offset_array = numpy.array(range(-num_lines,num_lines+1))
             offset = yoffset*offset_array
 
             for j in range(len(formatted_text)):
-                rendered_text = font.render(formatted_text[j],True,self.text_color)
+                rendered_text = font.render(formatted_text[j],True,font_color)
                 self.center_text(text=rendered_text,y_offset=offset[j],center_x=center_x, center_y=center_y)
         
         pygame.display.update()
@@ -193,14 +194,14 @@ class ChoiceTask():
     def text_input(self, message):
         w = 600
         h = 70
-        csnamebox = pygame.draw.rect(self.screen,self.white,pygame.Rect((self.center_x-w/2, self.top_y-100, w, h)), 0)
+        csnamebox = pygame.draw.rect(self.screen,self.white,pygame.Rect((self.center_x-int(w/2), self.center_y-h-100, w, h)), 0)
         yoffset = 25
         if len(message) != 0:
             blitmessage = self.wrapline(text=message,font=self.body,maxwidth=330)
             for j in range(len(blitmessage)):
                 self.screen.blit(self.body.render(blitmessage[j],True,self.text_color),\
                     (self.center_x-int(w/2)+10,\
-                    self.top_y-100+yoffset*j))
+                    self.center_y-h-100+yoffset*j))
             pygame.display.update()
 
 
@@ -213,19 +214,19 @@ class ChoiceTask():
         
         # continue_button = pygbutton.PygButton(rect=(self.center_x-100,self.center_y, 200,100),\
         #  caption="Continue", fgcolor=self.button_color, bgcolor=self.background_color,  font=self.button)
-
+        
         continue_button= pygbutton.PygButton(rect=(self.center_x-100,self.center_y, 200,70),\
-         caption="Continue",  fgcolor=self.button_color, bgcolor=self.background_color, font=self.button)
+         caption="Continue",  bgcolor=self.button_color, fgcolor=self.background_color, font=self.button)
 
         continue_button.draw(self.screen)
 
         pygame.display.update()
-        formdone = False
-        while not formdone:
+        filling = True
+        while filling: 
             for event in pygame.event.get():
-                if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN):
+                if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN) and len(current_string)>0:
                     if 'click' in continue_button.handleEvent(event): 
-                        formdone=True
+                        filling=False
                 elif event.type == KEYDOWN:
                     if event.key == K_BACKSPACE:
                         current_string = current_string[0:-1]
@@ -262,9 +263,10 @@ class ChoiceTask():
         self.of.write(text + '\n')
 
     # Main screen fixation point
-    def attn_screen(self, wait_time=3000):
+    def attn_screen(self, attn=None,wait_time=3000):
         self.screen.fill(self.background_color)
-        attn = pygame.image.load('./images/attn_cross.png').convert_alpha()
+        if attn is None:
+            attn = pygame.image.load('./images/attn_cross.png').convert_alpha()
         self.screen.blit(attn,(self.screen_width/2 - attn.get_width()/2,self.screen_height/2 - attn.get_height()/2))
         pygame.display.update()
         self.of.write('Attention screen on ' + repr(time.time()) + '\n')
@@ -301,15 +303,15 @@ class ChoiceTask():
         # Make buttons
         if button_txt1 is not None and button_txt2 is not None:
             left_button = pygbutton.PygButton(rect=(self.left_center_x-70,self.bottom_y+70, 140,70),\
-             caption=button_txt2,  fgcolor=self.button_color, bgcolor=self.background_color, font=self.button)
+             caption=button_txt2,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
             right_button = pygbutton.PygButton(rect=(self.right_center_x-60,self.bottom_y+70, 140,70),\
-             caption=button_txt1, fgcolor=self.button_color, bgcolor=self.background_color, font=self.button)
+             caption=button_txt1, fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
         elif button_txt1 is not None and button_txt2 is None:
             right_button = pygbutton.PygButton(rect=(self.center_x-60,self.bottom_y+70, 140,70),\
-             caption=button_txt1, fgcolor=self.button_color, bgcolor=self.background_color, font=self.button)
+             caption=button_txt1, fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
         elif button_txt2 is not None and button_txt1 is None:
             left_button = pygbutton.PygButton(rect=(self.center_x-70,self.bottom_y+70, 140,70),\
-             caption=button_txt2,  fgcolor=self.button_color, bgcolor=self.background_color, font=self.button)
+             caption=button_txt2,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
 
         left_button.draw(self.screen)
         right_button.draw(self.screen)

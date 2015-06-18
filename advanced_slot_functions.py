@@ -7,6 +7,7 @@ import numpy
 import random
 from slot_buttons import SlotButton
 from time import strftime,localtime
+import time
 
 
 # Define colors:
@@ -29,6 +30,9 @@ GOLD   = ( 254, 195,  13)
 money_font = pygame.font.Font('./fonts/DS-DIGIB.TTF',80)
 scoreboard = pygame.image.load('./images/symbols_scoreboard.png').convert_alpha()
 win_banner = pygame.image.load('./images/symbols_banner.png').convert_alpha()
+tnu_casino = pygame.image.load('./images/slot_machines_welcome_banner.png').convert_alpha()
+card = pygame.image.load('./images/symbols_card.png').convert_alpha()
+
 # Reward
 multiplier = [10,9,8,7,6,5,4,3,2]
 
@@ -90,7 +94,10 @@ def get_screen_elements(c, task):
  
     positions = {};
     positions['scoreboard_x'] = 20
-    positions['scoreboard_y'] = c.bottom_y - 50
+    positions['scoreboard_y'] = c.bottom_y - 100
+
+    positions['cashout_x'] = 20
+    positions['cashout_y'] = c.top_y+0.1*sizes['sh']+1.2*sizes['bbh'] + 10
 
     # Add screen-specific positions
     if task['wheel_hold_buttons']:
@@ -123,7 +130,6 @@ def get_screen_elements(c, task):
         positions['clear_x'] = positions['bet_5_x']
         positions['clear_y'] = c.center_y+(sizes['sh']/3)+2*sizes['sbw']/3 - hold_offset
     
-    # positions['bet_screen_x'] = c.left_center_x+(sizes['sh']/9) - x0
     positions['bet_screen_x'] = positions['bet_5_x']
     positions['bet_screen_y'] = positions['pull_y']
 
@@ -133,7 +139,9 @@ def get_screen_elements(c, task):
 
     positions['logo_x'] = c.left_x+(sizes['sh']/9)
     positions['logo_y'] = c.top_y
+
     positions['account_screen_y'] = c.top_y+0.1*sizes['sh']
+
     positions['machine'] = {}
     positions['machine']['base_x'] = c.center_x-(machines['1'].get_width()/2)
     positions['machine']['base_y'] = 0
@@ -143,7 +151,6 @@ def get_screen_elements(c, task):
     positions['machine']['y']  =  4.5*machines['1'].get_height()/10
 
     # Side machines
-    # TODO: make dynamic
     positions['mini_machine'] = {}
     positions['mini_machine']['x'] = c.right_x - 200
     positions['mini_machine']['y0'] = c.center_y - 310
@@ -151,9 +158,6 @@ def get_screen_elements(c, task):
     positions['mini_machine']['y2'] = c.center_y + 140
 
     c.screen.fill(c.background_color)
-
-    # bet_details = pygame.Rect(c.center_x+100, 80,c.screen_width*0.3-50, c.screen_height*0.45)
-    # pygame.draw.rect(c.screen,CARROT,bet_details,0)
 
     # Set up buttons
     buttons = {}
@@ -168,15 +172,15 @@ def get_screen_elements(c, task):
         buttons['pull'] = SlotButton(rect=(positions['pull_x'],positions['pull_y'], sizes['mbw'],sizes['sbh']),\
         caption="Pull", fgcolor=c.background_color, bgcolor=PURPLE, font=c.header)
 
+        buttons['cashout'] = SlotButton(rect=(positions['cashout_x'],positions['cashout_y'], sizes['bbw']+35,sizes['xsbh']),\
+            caption="Cashout", fgcolor=c.background_color, bgcolor=WHITE, font=c.button)
+
         if task['wheel_hold_buttons']:  
             buttons['pull'] = SlotButton(rect=(positions['pull_x'],positions['pull_y'], sizes['mbw'],sizes['sbh']),\
             caption="Pull", fgcolor=c.background_color, bgcolor=PURPLE, font=c.header)
 
             buttons['clear'] = SlotButton(rect=(positions['clear_x'],positions['clear_y'], sizes['mbw'],sizes['sbh']),\
             caption="Clear", fgcolor=c.background_color, bgcolor=BRIGHT_ORANGE, font=c.header)
-
-            # buttons['pull'] = SlotButton(rect=(positions['pull_x'],positions['pull_y'], sizes['mbw'],2.2*sizes['sbh']),\
-            # caption="Pull", fgcolor=c.background_color, bgcolor=PURPLE, font=c.header)
         else:
             buttons['pull'] = SlotButton(rect=(positions['pull_x'],positions['pull_y'], sizes['mbw'],1.42*sizes['sbh']),\
             caption="Pull", fgcolor=c.background_color, bgcolor=PURPLE, font=c.header)
@@ -208,9 +212,9 @@ def display_assets(c,positions,sizes,task):
     pygame.draw.rect(c.screen,c.background_color,bet_screen_inside,0)
 
     bet_banner = money_font.render(str(task['bet_size'][task['trial']]),True,RED) 
-    c.center_text(bet_banner, bet_screen_inside,0,0)
+    c.surf_center_text(bet_banner, bet_screen_inside,0,0)
 
-    account_screen_inside = pygame.Rect(positions['scoreboard_x']+1,positions['account_screen_y']+1,sizes['bbw']+33, 2*sizes['bbh']-2)
+    account_screen_inside = pygame.Rect(positions['scoreboard_x']+1,positions['account_screen_y']+1,sizes['bbw']+33, 1.2*sizes['bbh']-2)
     pygame.draw.rect(c.screen,c.background_color,account_screen_inside,0)
 
     account_banner = c.header.render("Account (AUD)",True,GOLD) 
@@ -242,11 +246,10 @@ def draw_screen(c, positions, buttons, sizes, task):
     bet_screen = pygame.Rect(positions['bet_screen_x'],positions['bet_screen_y'],sizes['bbw']+45, sizes['sbh']-3)
     pygame.draw.rect(c.screen,WHITE,bet_screen,0)
 
-    account_screen = pygame.Rect(positions['scoreboard_x'],positions['account_screen_y'],sizes['bbw']+35, 2*sizes['bbh'])
+    account_screen = pygame.Rect(positions['scoreboard_x'],positions['account_screen_y'],sizes['bbw']+35, 1.2*sizes['bbh'])
     pygame.draw.rect(c.screen,GOLD,account_screen,0)
 
-    scaled_scoreboard = pygame.transform.scale(scoreboard,(int(round(sizes['bbw']+35)),int(round(1.4*sizes['bbh']))))
-    c.screen.blit(scaled_scoreboard,(positions['scoreboard_x'],positions['scoreboard_y']))
+    c.screen.blit(scoreboard,(positions['scoreboard_x'],positions['scoreboard_y']))
 
     display_assets(c,positions,sizes,task)
 
@@ -283,6 +286,25 @@ def clear(c,task):
             del task['bet_sequence'][-1]
     return task
 
+def cashout(c, positions, buttons, sizes, task):    
+    c.screen.fill(c.background_color)
+    cashout_or_back = c.title.render("Cashout or go back to the game?", True, GOLD)
+    c.center_text(cashout_or_back,y_offset=-100, center_x=c.center_x, center_y=c.center_y)
+
+    button_clicked = c.choice_screen(button_txt1="Cashout", button_txt2="Go Back")
+    if button_clicked[0] == 'left':
+        draw_screen(c, positions, buttons, sizes, task)
+        pygame.display.update()
+    elif button_clicked[0] == 'right':
+        c.blank_screen()
+        c.text_screen('Leaving the casino!', font=c.title, font_color=GOLD, valign='top', y_displacement= -45, wait_time=2000)  
+        c.blank_screen()
+        welcome_screen(c) 
+        c.blank_screen()
+
+def welcome_screen(c, wait_time=3000):
+    c.attn_screen(attn=tnu_casino,wait_time=wait_time)
+
 def waitfun(milliseconds):
     nowtime = pygame.time.get_ticks()
     while pygame.time.get_ticks()-nowtime < milliseconds:
@@ -303,43 +325,109 @@ def win_screen(c,positions, buttons, sizes, task):
     while counter < numsparkle:
         c.screen.blit(pygame.transform.scale(winnerblit, (c.screen_width, c.screen_height)),(10,10))
         pygame.display.update()
-        waitfun(1000)
+        waitfun(800)
         draw_screen(c, positions, buttons, sizes, task)
         counter += 1
 
     draw_screen(c, positions, buttons, sizes, task)
-    c.center_text(bet_banner, bet_screen_inside,0,0)
 
-    #TODO: Money won
+def show_win_banner(c,positions,reward):
+    c.screen.blit(win_banner,(positions['banner_x'],positions['banner_y'])) 
+    c.text_screen('You won ' + str(reward) + ' cents!!', font=c.title, valign='top', y_displacement= -45, wait_time=800)
+
+def gamble(c,task, sizes):
+    card_back = pygame.image.load('./images/symbols_card_back.png').convert_alpha()
+    cards = []
+    cards.append(pygame.image.load('./images/symbols_card1.png').convert_alpha())
+    cards.append(pygame.image.load('./images/symbols_card2.png').convert_alpha())
+    cards.append(pygame.image.load('./images/symbols_card3.png').convert_alpha())
+    card_won = pygame.image.load('./images/symbols_card_won.png').convert_alpha()
+    card_lost = pygame.image.load('./images/symbols_card_lost.png').convert_alpha()
+
+    x_pos = c.center_x-card_back.get_width()/2
+    y_pos = c.center_y-card_back.get_height()/2
+
+    c.blank_screen()
+    c.make_banner(c.title.render("Double or nothing?", True, GOLD))
+    c.screen.blit(card_back,(x_pos,y_pos))
+    pygame.display.update()
+    waitfun(1000)
+
+    gamble_button = SlotButton(rect=(c.left_center_x-sizes['bbw']/2,c.bottom_y+sizes['sbh']/2, sizes['bbw'],sizes['sbh']),\
+        caption="Gamble",  fgcolor=c.background_color, bgcolor=RED, font=c.button)
+    no_gamble_button = SlotButton(rect=(c.right_center_x-sizes['bbw']/2,c.bottom_y+sizes['sbh']/2,sizes['bbw'],sizes['sbh']),\
+        caption="No thanks.", fgcolor=c.background_color, bgcolor=GREEN, font=c.button)
+
+    gamble_button.draw(c.screen)
+    no_gamble_button.draw(c.screen)
+    pygame.display.update()
+
+    decided = False
+    CARD = pygame.USEREVENT + 1
+    pygame.time.set_timer(CARD, 1000)
+    time_elapsed = 0
+    start_time = time.time()
+    c.screen.blit(cards[0],(x_pos,y_pos))
+    pygame.display.update()
+    while not decided and time_elapsed < 3:
+        time_elapsed = int(round(time.time()-start_time))
+        for event in pygame.event.get():
+            if event.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
+                if 'click' in gamble_button.handleEvent(event): 
+                    if int(str(task['result_sequence'])[6]) == 1:
+                        task['account'][task['trial']] = task['account'][task['trial']] + task['winloss'][task['trial']]
+                        c.screen.blit(card_won,(x_pos,y_pos))
+                        pygame.display.flip()
+                        waitfun(1000)
+                        decided = True
+                        show_win_banner(task['winloss'][task['trial']])
+                        task['winloss'][task['trial']] = 2*task['winloss'][task['trial']]
+                    elif int(str(task['result_sequence'])[6]) == 0:
+                        c.screen.blit(card_lost,(x_pos,y_pos))
+                        pygame.display.flip()
+                        waitfun(1000)
+                        decided = True
+                elif 'click' in no_gamble_button.handleEvent(event):
+                    waitfun(300)
+                    decided = True
+            elif event.type == CARD:
+                c.screen.blit(cards[time_elapsed],(x_pos,y_pos))
+                pygame.display.flip()
+
 def result(c,positions,buttons,sizes,task):
-    wait = 100
+    wait = 200
     c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
-    c.screen.blit(symbols[str(task['result_sequence'])[2]],(positions['machine']['x1'],positions['machine']['y']))
+    c.screen.blit(symbols[str(task['result_sequence'][task['trial']])[2]],(positions['machine']['x1'],positions['machine']['y']))
     pygame.display.flip()
     waitfun(wait)
-    c.screen.blit(symbols[str(task['result_sequence'])[3]],(positions['machine']['x2'],positions['machine']['y']))
+    c.screen.blit(symbols[str(task['result_sequence'][task['trial']])[3]],(positions['machine']['x2'],positions['machine']['y']))
     pygame.display.flip()
     waitfun(wait)
-    c.screen.blit(symbols[str(task['result_sequence'])[4]],(positions['machine']['x3'],positions['machine']['y']))
+    c.screen.blit(symbols[str(task['result_sequence'][task['trial']])[4]],(positions['machine']['x3'],positions['machine']['y']))
     pygame.display.flip()
     waitfun(wait)
 
     update_account(c,positions, sizes, task)
-
-    if str(task['result_sequence'])[1] == '1':
+    if str(task['result_sequence'][task['trial']])[1] == '1':
         task['reward_grade'][task['trial']] = int(str(task['result_sequence'])[2])
         reward = multiplier[task['reward_grade'][task['trial']]]*task['bet_size'][task['trial']] - task['bet_size'][task['trial']]
         task['winloss'].append(reward)
         task['account'].append(reward+task['account'][int(task['trial'])])
+        waitfun(wait)
         win_screen(c,positions, buttons, sizes, task)
-    elif str(task['result_sequence'])[1] == '2' or str(task['result_sequence'])[1] == '3' or str(task['result_sequence'])[1] == '4': 
-        task['reward_grade'][int(task['trial'])] = 0
+        draw_screen(c, positions, buttons, sizes, task)
+        show_win_banner(c,positions,reward)
+    elif str(task['result_sequence'][task['trial']])[1] == '2' or str(task['result_sequence'])[1] == '3' or str(task['result_sequence'])[1] == '4': 
+        task['reward_grade'][task['trial']] = 0
         reward = -task['bet_size']
         task['winloss'].append(reward)
         task['account'].append(reward+task['account'][int(task['trial'])])
-    draw_screen(c, positions, buttons, sizes, task)
-    c.screen.blit(win_banner,(positions['banner_x'],positions['banner_y'])) 
-    c.text_screen('You won {:.2}'.format(reward), valign='top', wait_time=2000)   
+        draw_screen(c, positions, buttons, sizes, task)
+    if int(str(task['result_sequence'][task['trial']])[5]) == 1:
+        gamble(c, task, sizes)
+        draw_screen(c, positions, buttons, sizes, task)
+    return task
+
 
 def spin_wheels(c, positions, buttons, task):
 
@@ -348,17 +436,16 @@ def spin_wheels(c, positions, buttons, task):
     WHEEL2 = pygame.USEREVENT + 2
     WHEEL3 = pygame.USEREVENT + 3
 
-    pygame.time.set_timer(WHEEL1, 150)
-    pygame.time.set_timer(WHEEL2, 160)
-    pygame.time.set_timer(WHEEL3, 170)
+    pygame.time.set_timer(WHEEL1, 100)
+    pygame.time.set_timer(WHEEL2, 110)
+    pygame.time.set_timer(WHEEL3, 120)
     iterator = 0
-    while roll_wheels and iterator < 20:
+    while roll_wheels and iterator < 10:
         for event in pygame.event.get():
             if event.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
                 if 'click' in buttons['stop'].handleEvent(event):
                     buttons['stop'].draw(c.screen)
                     pygame.display.update()
-                    print "pressed stop"
                     
                     pygame.time.set_timer(WHEEL1,0)
                     pygame.time.set_timer(WHEEL2,0)
@@ -375,8 +462,8 @@ def spin_wheels(c, positions, buttons, task):
                 c.screen.blit(symbols[str(random.randint(0,8))],(positions['machine']['x3'],positions['machine']['y']))
                 pygame.display.flip()
                 iterator += 1
-                print iterator
-    print "out of loop!"
+
+
 
             
 # symbols['a'] = pygame.image.load('./images/symbols_apple.png').convert_alpha()

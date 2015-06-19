@@ -54,7 +54,7 @@ with open ('taskBackend.txt','r') as f:
 # 5. outcome of gamble
 
 result_sequence = probability_trace.split(',')
-NUM_TRIALS = 2
+NUM_TRIALS = 200
 
 # Define dictionary of task attributes:
 task = {'bet_size': np.zeros(NUM_TRIALS).astype('int'),

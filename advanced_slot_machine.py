@@ -25,6 +25,7 @@ PURPLE = ( 72,  61, 139)
 ORANGE = (255, 140,   0)
 WHITE =  (255, 255, 255)
 DARK_GRAY = ( 20, 20, 20)
+GOLD   = ( 254, 195,  13)
 
 c = ChoiceTask(background_color=DARK_GRAY, 
     title  = pygame.font.Font('./fonts/Lobster.ttf', 60),
@@ -36,7 +37,7 @@ c = ChoiceTask(background_color=DARK_GRAY,
 
 (subjectname) = c.subject_information_screen()
 subject = subjectname.replace(" ","")
-c.create_output_file(subjectname)
+matlab_output_file = c.create_output_file(subjectname)
 welcome_screen(c)
 
 # Pull in probability trace:
@@ -159,5 +160,8 @@ for trial in range(NUM_TRIALS):
                 buttons[key].draw(c.screen)
             pygame.display.update()
 
-savemat('output.mat',task)
-c.exit_screen("Thanks for playing!")
+savemat(matlab_output_file,task)
+c.exit_screen("Thanks for playing!", font=c.title, font_color=GOLD)
+
+
+

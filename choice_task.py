@@ -188,8 +188,9 @@ class ChoiceTask():
 
         # Define the output file in the patient folder
         output_file = subdirname + '/output' + nowstr + '.txt'
-
+        matlab_output_file = subdirname + '/output' + nowstr + '.mat'
         self.of = open(output_file, 'w')
+        return matlab_output_file
 
     def text_input(self, message):
         w = 600
@@ -362,11 +363,17 @@ class ChoiceTask():
         return button_clicked
 
     # Exit screen
-    def exit_screen(self, exit_text="Exiting"):
+    def exit_screen(self, exit_text="Exiting", font=None,font_color=None):
         self.blank_screen(time=10)
         
+        if font is None:
+            font = self.header
+
+        if font_color is None:
+            font_color = self.text_color
+
         # Text input should be raw text 
-        self.text_screen(text=exit_text, font=self.header)
+        self.text_screen(text=exit_text, font=self.header, font_color=font_color)
         pygame.display.update()
         self.wait_fun(milliseconds=3000)
         self.log('Exiting game ' + repr(time.time()))

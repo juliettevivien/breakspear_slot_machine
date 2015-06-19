@@ -1,0 +1,13 @@
+Attention screen on 1434665127.251151
+Attention screen off 1434665130.25121
+Trial 0: Added 10 to bet. 1434665143.647012
+
+Trial 0: Pulling wheels 1434665143.931745
+
+Summary Trial0: Bet:10Account: [1990]
+Trial 1: Added 10 to bet. 1434665153.484297
+
+Trial 1: Pulling wheels 1434665154.8168
+
+Summary Trial1: Bet:10Account: [1990]
+Exiting game 1434665160.32319

@@ -315,6 +315,7 @@ def welcome_screen(c, wait_time=3000):
 def waitfun(milliseconds):
     nowtime = pygame.time.get_ticks()
     while pygame.time.get_ticks()-nowtime < milliseconds:
+        pygame.time.wait(10)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -448,48 +449,35 @@ def spin_wheels(c, positions, buttons, task):
     pygame.time.set_timer(WHEEL2, base_delay+10)
     pygame.time.set_timer(WHEEL3, base_delay+20)
     iterator = 0
-    while roll_wheels and iterator < 7:
-        for event in pygame.event.get():
-            if event.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
+    pygame.event.clear()
+
+    
+    i1 = 50
+    o = 3
+    m = 2
+    n = 200;
+
+    while roll_wheels:
+        if pygame.event.peek(MOUSEBUTTONUP):
+            for event in pygame.event.get():
                 if 'click' in buttons['stop'].handleEvent(event):
                     buttons['stop'].draw(c.screen)
                     pygame.display.update()
-                    
                     pygame.time.set_timer(WHEEL1,0)
                     pygame.time.set_timer(WHEEL2,0)
                     pygame.time.set_timer(WHEEL3,0)
                     roll_wheels = False
-            elif event.type == WHEEL1:
-                c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
+        else:
+            if i1-o < round(time.time()*1000) % n < i1:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x1'],positions['machine']['y']))
-                pygame.display.update()
-            elif event.type == WHEEL2:
+                pygame.display.flip()
+            elif (i1*2)-o < round(time.time()*1000) % n < i1*2:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x2'],positions['machine']['y']))
                 pygame.display.flip()
-            elif event.type == WHEEL3:
+            elif (i1*3)-o < round(time.time()*1000) % n < i1*3:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x3'],positions['machine']['y']))
                 pygame.display.flip()
-                iterator += 1
+            elif (i1*4)-o < round(time.time()*1000) % n < i1*4:
+                c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
+                pygame.display.flip()
 
-
-
-            
-# symbols['a'] = pygame.image.load('./images/symbols_apple.png').convert_alpha()
-# symbols['b']  = pygame.image.load('./images/symbols_banana.png').convert_alpha()
-# symbols['c'] = pygame.image.load('./images/symbols_bar.png').convert_alpha()
-# symbols['d'] = pygame.image.load('./images/symbols_bell.png').convert_alpha()
-# symbols['e'] = pygame.image.load('./images/symbols_cherry.png').convert_alpha()
-# symbols['f']  = pygame.image.load('./images/symbols_clover.png').convert_alpha()
-# symbols['g'] = pygame.image.load('./images/symbols_coin.png').convert_alpha()
-# symbols['h']  = pygame.image.load('./images/symbols_diamond.png').convert_alpha()
-# symbols['i']  = pygame.image.load('./images/symbols_goldbars.png').convert_alpha()
-# symbols['j']  = pygame.image.load('./images/symbols_grapes.png').convert_alpha()
-# symbols['k']  = pygame.image.load('./images/symbols_heart.png').convert_alpha()
-# symbols['l']  = pygame.image.load('./images/symbols_horseshoe.png').convert_alpha()
-# symbols['m']  = pygame.image.load('./images/symbols_lemon.png').convert_alpha()
-# symbols['n']  = pygame.image.load('./images/symbols_money.png').convert_alpha()
-# symbols['o']  = pygame.image.load('./images/symbols_moneybag.png').convert_alpha()
-# symbols['p'] = pygame.image.load('./images/symbols_orange.png').convert_alpha()
-# symbols['q']  = pygame.image.load('./images/symbols_plum.png').convert_alpha()
-# symbols['r'] = pygame.image.load('./images/symbols_strawberry.png').convert_alpha()
-# symbols['s']  = pygame.image.load('./images/symbols_watermelon.png').convert_alpha()

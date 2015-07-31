@@ -89,10 +89,10 @@ for trial in range(NUM_TRIALS):
 
     buttons, task = draw_screen(c, positions, buttons, sizes, task)
 
-    while not next_trial:   
+    while not next_trial:  
+        pygame.time.wait(10)
         for event in pygame.event.get():
             if event.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
-
                 # Handle bet behavior 
                 if 'click' in buttons['add_five'].handleEvent(event): 
                     task['trial_stage'] = 'bet'
@@ -110,11 +110,12 @@ for trial in range(NUM_TRIALS):
                     c.log('Trial ' + str(trial) + ': Added 10 to bet. ' + repr(time.time()) + '\n')
 
                 elif 'click' in buttons['clear'].handleEvent(event):
-                    c.log('Trial ' + str(trial) + ': Clearing ' + str(task['bet_sequence'][-1]) + 'from bet. ' + repr(time.time()) + '\n')
-                    task['trial_stage'] = 'clear'
-                    task = clear(c,task)
-                    task = update_account(c,positions, sizes, task)
-                    display_assets(c,positions,sizes,task)
+                    if len(task['bet_sequence']) > 0:   
+                        c.log('Trial ' + str(trial) + ': Clearing ' + str(task['bet_sequence'][-1]) + 'from bet. ' + repr(time.time()) + '\n')
+                        task['trial_stage'] = 'clear'
+                        task = clear(c,task)
+                        task = update_account(c,positions, sizes, task)
+                        display_assets(c,positions,sizes,task)
 
                 # Handle pull and result
                 elif 'click' in buttons['pull'].handleEvent(event):

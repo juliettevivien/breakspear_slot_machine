@@ -128,41 +128,46 @@ class SlotButton(object):
         when mouseUp() or mouseClick() is called. lastMouseDownOverButton is
         always False when mouseUp() or mouseClick() is called."""
 
-        if eventObj.type not in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN) or not self._visible:
+        if eventObj.type not in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN, KEYDOWN, KEYUP) or not self._visible:
             # The button only cares bout mouse-related events (or no events, if it is invisible)
             return []
 
         retVal = []
 
         hasExited = False
-        if not self.mouseOverButton and self._rect.collidepoint(eventObj.pos):
-            # if mouse has entered the button:
-            self.mouseOverButton = True
-            self.mouseEnter(eventObj)
-            retVal.append('enter')
-        elif self.mouseOverButton and not self._rect.collidepoint(eventObj.pos):
-            # if mouse has exited the button:
-            self.mouseOverButton = False
-            hasExited = True # call mouseExit() later, since we want mouseMove() to be handled before mouseExit()
+        if eventObj.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN):
+            if not self.mouseOverButton and self._rect.collidepoint(eventObj.pos):
+                # if mouse has entered the button:
+                self.mouseOverButton = True
+                self.mouseEnter(eventObj)
+                retVal.append('enter')
+            elif self.mouseOverButton and not self._rect.collidepoint(eventObj.pos):
+                # if mouse has exited the button:
+                self.mouseOverButton = False
+                hasExited = True # call mouseExit() later, since we want mouseMove() to be handled before mouseExit()
 
-        if self._rect.collidepoint(eventObj.pos):
-            # if mouse event happened over the button:
-            if eventObj.type == MOUSEMOTION:
-                self.mouseMove(eventObj)
-                retVal.append('move')
-            elif eventObj.type == MOUSEBUTTONDOWN:
-                self.buttonDown = True
-                self.lastMouseDownOverButton = True
-                self.mouseDown(eventObj)
-                retVal.append('down')
-        else:
-            if eventObj.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
-                # if an up/down happens off the button, then the next up won't cause mouseClick()
-                self.lastMouseDownOverButton = False
-
+            if self._rect.collidepoint(eventObj.pos):
+                # if mouse event happened over the button:
+                if eventObj.type == MOUSEMOTION:
+                    self.mouseMove(eventObj)
+                    retVal.append('move')
+                elif eventObj.type == MOUSEBUTTONDOWN :
+                    self.buttonDown = True
+                    self.lastMouseDownOverButton = True
+                    self.mouseDown(eventObj)
+                    retVal.append('down')
+            else:
+                if eventObj.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
+                    # if an up/down happens off the button, then the next up won't cause mouseClick()
+                    self.lastMouseDownOverButton = False
+        elif eventObj.type == KEYDOWN:
+            self.buttonDown = True
+            self.lastMouseDownOverButton = True
+            self.mouseDown(eventObj)
+            retVal.append('down')
         # mouse up is handled whether or not it was over the button
         doMouseClick = False
-        if eventObj.type == MOUSEBUTTONUP:
+        if eventObj.type == MOUSEBUTTONUP or eventObj.type == KEYUP:
             if self.lastMouseDownOverButton:
                 doMouseClick = True
             self.lastMouseDownOverButton = False

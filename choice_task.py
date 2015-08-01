@@ -70,6 +70,12 @@ class ChoiceTask():
         self.button_color     =  (  58, 138, 112)
         self.white            =  ( 255, 255, 255)
 
+        self.music = pygame.mixer.Sound('./sounds/surething.wav')
+        self.press_sound = pygame.mixer.Sound('./sounds/buttonpress.wav')
+        self.press_sound.set_volume(0.2)
+        self.game_over_sound = pygame.mixer.Sound('./sounds/gameover.wav')
+
+
         self.__dict__.update(kwds)
 
         self.screen.fill(self.background_color)
@@ -263,6 +269,12 @@ class ChoiceTask():
     def log(self,text):
         self.of.write(text + '\n')
 
+    def game_music(self, onoff):
+        if onoff == 'on':
+            self.music.play(100,0)
+        elif onoff == 'off':
+            self.loopmusic.stop()
+
     # Main screen fixation point
     def attn_screen(self, attn=None,wait_time=3000):
         self.screen.fill(self.background_color)
@@ -279,7 +291,7 @@ class ChoiceTask():
         pygame.display.update()
         self.wait_fun(milliseconds=time)
         
-    def choice_screen(self,choice_image1=None, choice_text1=None, button_txt1="Choose", choice_image2=None, choice_text2=None, button_txt2="Choose"):
+    def choice_screen(self,choice_image1=None, choice_text1=None, button_txt1="Choose", choice_image2=None, choice_text2=None, button_txt2=None):
        
         # This function sets up the canonical choice screen. Can be given on or two images.
         if choice_image1 is not None and choice_image2 is not None:
@@ -307,15 +319,19 @@ class ChoiceTask():
              caption=button_txt2,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
             right_button = pygbutton.PygButton(rect=(self.right_center_x-60,self.bottom_y+70, 140,70),\
              caption=button_txt1, fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
+            left_button.draw(self.screen)
+            right_button.draw(self.screen)
         elif button_txt1 is not None and button_txt2 is None:
             right_button = pygbutton.PygButton(rect=(self.center_x-60,self.bottom_y+70, 140,70),\
              caption=button_txt1, fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
+            right_button.draw(self.screen)
         elif button_txt2 is not None and button_txt1 is None:
             left_button = pygbutton.PygButton(rect=(self.center_x-70,self.bottom_y+70, 140,70),\
              caption=button_txt2,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
+            left_button.draw(self.screen)
 
-        left_button.draw(self.screen)
-        right_button.draw(self.screen)
+
+       
 
         pygame.display.update()
         self.of.write('ChoiceScreen on ' + repr(time.time()) + '\n')
@@ -355,12 +371,63 @@ class ChoiceTask():
                         self.wait_fun(200)
                         playing = False
 
-            left_button.draw(self.screen)
-            right_button.draw(self.screen)
+            if button_txt1 is not None and button_txt2 is not None:           
+                left_button.draw(self.screen)
+                right_button.draw(self.screen)
+            elif button_txt1 is not None and button_txt2 is None:
+                right_button.draw(self.screen)
+            elif button_txt2 is not None and button_txt1 is None:
+                left_button.draw(self.screen)
             pygame.display.update()
 
         self.wait_fun(milliseconds=300)    
         return button_clicked
+
+        
+    def button_screen(self,choice_image=None, choice_text=None, button_txt=None, x_offset=0, y_offset=0):
+        
+        self.screen.blit(choice_image,(self.center_x-x_offset-choice_image.get_width()/2,\
+        self.center_y+y_offset-choice_image.get_height()/2))
+
+        if choice_text is not None:
+            self.text_screen(text=choice_text,font=self.choice_text,
+                 maxwidth=int(self.screen_width/3),valign='bottom',halign='left',wait_time=None)
+
+        center_button = pygbutton.PygButton(rect=(self.center_x-70,self.bottom_y+160, 140,70),\
+             caption=button_txt,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
+
+        center_button.draw(self.screen)
+        pygame.display.update()
+        self.of.write('ButtonScreen on ' + repr(time.time()) + '\n')
+        
+        # Choice phase
+        playing = True
+        while playing:
+            for event in pygame.event.get():
+                if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                    pygame.quit()
+
+                if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN):
+                    if button_txt is not None:
+                        if 'click' in center_button.handleEvent(event):                 
+                            self.log('Left button clicked \n')
+                            button_clicked = ['left']
+                            playing = False
+                elif event.type == KEYDOWN:
+                    pressedKey = pygame.key.name(event.key)
+                    if pressedKey == 'left':
+                        center_button.buttonDown = True;
+                        center_button.draw(self.screen)
+                        pygame.display.update()
+                        button_clicked = ['left']
+                        self.wait_fun(200)
+                        playing = False
+            center_button.draw(self.screen)
+            pygame.display.update()
+
+        self.wait_fun(milliseconds=300)    
+        return button_clicked
+
 
     # Exit screen
     def exit_screen(self, exit_text="Exiting", font=None,font_color=None):
@@ -375,6 +442,7 @@ class ChoiceTask():
         # Text input should be raw text 
         self.text_screen(text=exit_text, font=self.header, font_color=font_color)
         pygame.display.update()
+        self.game_over_sound.play()
         self.wait_fun(milliseconds=3000)
         self.log('Exiting game ' + repr(time.time()))
         exit()

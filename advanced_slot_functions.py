@@ -9,7 +9,6 @@ from slot_buttons import SlotButton
 from time import strftime,localtime
 import time
 
-
 # Define colors:
 #BLUE =   (  0,   0, 128)
 GREEN =  ( 58, 138, 112)
@@ -32,6 +31,8 @@ scoreboard = pygame.image.load('./images/symbols_scoreboard.png').convert_alpha(
 win_banner = pygame.image.load('./images/symbols_banner.png').convert_alpha()
 tnu_casino = pygame.image.load('./images/slot_machines_welcome_banner.png').convert_alpha()
 card = pygame.image.load('./images/symbols_card.png').convert_alpha()
+slot_image = pygame.image.load('./images/base_slot_machine.png').convert_alpha()
+instructions = pygame.image.load('./images/Slide1.png').convert_alpha()
 
 # Reward
 # multiplier = [10,9,8,7,6,5,4,3,2]
@@ -60,6 +61,18 @@ machines['4'] = pygame.image.load('./images/slot_machines_4.png').convert_alpha(
 
 small_win = pygame.image.load('./images/symbols_smallwin.png').convert_alpha()
 big_win = pygame.image.load('./images/symbols_megawin.png').convert_alpha()
+
+spinsound = pygame.mixer.Sound('./sounds/spinning2.wav')
+spinsound.set_volume(0.2)
+
+winsound = pygame.mixer.Sound('./sounds/winsound.wav')
+winsound.set_volume(0.8)
+
+bigwinsound = pygame.mixer.Sound('./sounds/bigwinsound.wav')
+bigwinsound.set_volume(0.3)
+
+spinstopsound = pygame.mixer.Sound('./sounds/spinstop.wav')
+spinstopsound.set_volume(0.7)
 
 #Define language
 # TODO: set this up as a button
@@ -172,10 +185,10 @@ def get_screen_elements(c, task):
 
     if language == 'English':
         buttons['add_five'] = SlotButton(rect=(positions['bet_5_x'],positions['bet_5_y'], sizes['sbw'],sizes['sbh']),\
-        caption="Add 5", fgcolor=c.background_color, bgcolor=BLUE, font=c.button,highlight=YELLOW)
+        caption="Bet +5", fgcolor=c.background_color, bgcolor=BLUE, font=c.button,highlight=YELLOW)
        
         buttons['add_ten']= SlotButton(rect=(positions['bet_10_x'],positions['bet_10_y'], sizes['sbw'],sizes['sbh']),\
-        caption="Add 10", fgcolor=c.background_color, bgcolor=GREEN, font=c.button)
+        caption="Bet +10", fgcolor=c.background_color, bgcolor=GREEN, font=c.button)
 
         buttons['pull'] = SlotButton(rect=(positions['pull_x'],positions['pull_y'], sizes['mbw'],sizes['sbh']),\
         caption="Pull", fgcolor=c.background_color, bgcolor=PURPLE, font=c.header)
@@ -222,6 +235,9 @@ def display_assets(c,positions,sizes,task):
     bet_banner = money_font.render(str(task['bet_size'][task['trial']]),True,RED) 
     c.surf_center_text(bet_banner, bet_screen_inside,0,0)
 
+    bet_label = c.title.render("Bet",True,RED) 
+    c.screen.blit(bet_label,(positions['bet_screen_x']+5, positions['bet_screen_y']-60))
+
     account_screen_inside = pygame.Rect(positions['scoreboard_x']+1,positions['account_screen_y']+1,sizes['bbw']+33, 1.2*sizes['bbh']-2)
     pygame.draw.rect(c.screen,c.background_color,account_screen_inside,0)
 
@@ -258,8 +274,6 @@ def draw_screen(c, positions, buttons, sizes, task):
     pygame.draw.rect(c.screen,GOLD,account_screen,0)
 
     c.screen.blit(scoreboard,(positions['scoreboard_x'],positions['scoreboard_y']))
-
-    
 
     ## At trial onset, blit a color box around the wheels
     # if task['start_trial'] == 1:
@@ -311,6 +325,20 @@ def cashout(c, positions, buttons, sizes, task):
 def welcome_screen(c, wait_time=3000):
     c.blank_screen()
     c.attn_screen(attn=tnu_casino,wait_time=wait_time)
+
+def instruction_screen(c):
+    c.blank_screen()
+    c.button_screen(choice_image=instructions, button_txt="Next", y_offset=-40)
+
+
+def begin_training_screen(c):
+    c.blank_screen()
+    c.text_screen('The next 5 trials are training trials. They will not count towards your final score.', font=c.header, font_color=GOLD, valign='center', y_displacement= -45, wait_time=4000) 
+
+def end_training_screen(c):
+    c.blank_screen()
+    c.text_screen('That''s the end of the training trials. The game will begin now! Good luck!', font=c.header, font_color=GOLD, valign='center', y_displacement= -45, wait_time=4000) 
+
 
 def waitfun(milliseconds):
     nowtime = pygame.time.get_ticks()
@@ -439,7 +467,6 @@ def result(c,positions,buttons,sizes,task):
 
 def spin_wheels(c, positions, buttons, task):
 
-    roll_wheels = True
     WHEEL1 = pygame.USEREVENT + 1
     WHEEL2 = pygame.USEREVENT + 2
     WHEEL3 = pygame.USEREVENT + 3
@@ -452,24 +479,37 @@ def spin_wheels(c, positions, buttons, task):
     pygame.event.clear()
 
     
-    i1 = 50
-    o = 3
-    m = 2
-    n = 200;
+    # i1 = 21
+    i1 = 70
+    o = 2
+    n = i1*4;
 
-    while roll_wheels:
-        if pygame.event.peek(MOUSEBUTTONUP):
+    counter = 0
+    while counter < 20:
+        spinsound.play(100,0)
+        if pygame.event.peek([MOUSEBUTTONDOWN,KEYDOWN,MOUSEBUTTONUP,KEYUP]):
             for event in pygame.event.get():
-                if 'click' in buttons['stop'].handleEvent(event):
+                if event.type in (MOUSEBUTTONDOWN,MOUSEBUTTONUP):
+                    if 'click' in buttons['stop'].handleEvent(event):
+                        buttons['stop'].draw(c.screen)
+                        pygame.display.update()
+                        counter = 40
+                elif event.type == KEYDOWN and event.key == K_SPACE: 
+                    buttons['stop'].handleEvent(event)
                     buttons['stop'].draw(c.screen)
                     pygame.display.update()
-                    pygame.time.set_timer(WHEEL1,0)
-                    pygame.time.set_timer(WHEEL2,0)
-                    pygame.time.set_timer(WHEEL3,0)
-                    roll_wheels = False
+                elif event.type == KEYUP and event.key == K_SPACE:
+                    buttons['pull'].handleEvent(event)
+                    buttons['pull'].draw(c.screen)
+                    buttons['stop'].handleEvent(event)
+                    buttons['stop'].draw(c.screen)
+                    pygame.display.update()
+                    counter = 40
         else:
             if i1-o < round(time.time()*1000) % n < i1:
+                c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x1'],positions['machine']['y']))
+                counter += 1
                 pygame.display.flip()
             elif (i1*2)-o < round(time.time()*1000) % n < i1*2:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x2'],positions['machine']['y']))
@@ -477,7 +517,6 @@ def spin_wheels(c, positions, buttons, task):
             elif (i1*3)-o < round(time.time()*1000) % n < i1*3:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x3'],positions['machine']['y']))
                 pygame.display.flip()
-            elif (i1*4)-o < round(time.time()*1000) % n < i1*4:
-                c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
-                pygame.display.flip()
+
+        spinsound.stop()
 

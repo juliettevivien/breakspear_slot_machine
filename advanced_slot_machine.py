@@ -27,6 +27,9 @@ WHITE =  (255, 255, 255)
 DARK_GRAY = ( 20, 20, 20)
 GOLD   = ( 254, 195,  13)
 
+
+leversound = pygame.mixer.Sound('./sounds/lever2.wav')
+
 c = ChoiceTask(background_color=DARK_GRAY, 
     title  = pygame.font.Font('./fonts/Lobster.ttf', 60),
     body  = pygame.font.Font('./fonts/Oswald-Bold.ttf', 30),
@@ -35,9 +38,12 @@ c = ChoiceTask(background_color=DARK_GRAY,
     choice_text = pygame.font.Font('./fonts/GenBasR.ttf', 30),
     button = pygame.font.Font('./fonts/Oswald-Bold.ttf',30))
 
+
+
 (subjectname) = c.subject_information_screen()
 subject = subjectname.replace(" ","")
 matlab_output_file = c.create_output_file(subjectname)
+instruction_screen(c)
 welcome_screen(c)
 
 # Pull in probability trace:
@@ -54,6 +60,7 @@ with open ('taskBackend.txt','r') as f:
 # 5. outcome of gamble
 
 result_sequence = probability_trace.split(',')
+
 NUM_TRIALS = 200
 
 # Define dictionary of task attributes:
@@ -66,7 +73,7 @@ task = {'bet_size': np.zeros(NUM_TRIALS).astype('int'),
         }
 
 # Start with initial account and machine
-task['account'][0] = 2000
+task['account'][0] = 500
 task['machine'] = 1
 
 # Set up initial screen 
@@ -74,8 +81,14 @@ positions, buttons, sizes = get_screen_elements(c, task)
 
 for trial in range(NUM_TRIALS):    
     print trial
-    # c.log('Trial ' + str(trial) + ' starting: ' + repr(time.time()) + '\n')   
     next_trial = False
+    if trial < 5:
+        if trial == 0:
+            begin_training_screen(c)
+    if trial == 5:
+        end_training_screen(c)
+        task['account'][trial] = 2000
+        welcome_screen(c)
 
     # Click everything forward
     task['bet_sequence'] = []
@@ -87,14 +100,19 @@ for trial in range(NUM_TRIALS):
     if int(str(result_sequence[trial])[0]) == 1:
         task['reward_grade'][trial] = int(str(result_sequence[trial])[1])
 
+    if task['account'][trial] < 5:
+        c.exit_screen("Unfortunately you lost your money and the game is over! Thanks for playing!", font=c.title, font_color=GOLD)
+
+
     buttons, task = draw_screen(c, positions, buttons, sizes, task)
 
     while not next_trial:  
-        pygame.time.wait(10)
+        pygame.time.wait(20)
         for event in pygame.event.get():
             if event.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
                 # Handle bet behavior 
                 if 'click' in buttons['add_five'].handleEvent(event): 
+                    c.press_sound.play()
                     task['trial_stage'] = 'bet'
                     task['bet_size'][trial] += 5
                     task['bet_sequence'].append(5)
@@ -102,6 +120,7 @@ for trial in range(NUM_TRIALS):
                     display_assets(c,positions,sizes,task)
                     c.log('Trial ' + str(trial) + ': Added 5 to bet. ' + repr(time.time()) + '\n')
                 elif 'click' in buttons['add_ten'].handleEvent(event):
+                    c.press_sound.play()
                     task['trial_stage'] = 'bet'
                     task['bet_size'][trial] += 10
                     task['bet_sequence'].append(10)
@@ -110,6 +129,7 @@ for trial in range(NUM_TRIALS):
                     c.log('Trial ' + str(trial) + ': Added 10 to bet. ' + repr(time.time()) + '\n')
 
                 elif 'click' in buttons['clear'].handleEvent(event):
+                    c.press_sound.play()
                     if len(task['bet_sequence']) > 0:   
                         c.log('Trial ' + str(trial) + ': Clearing ' + str(task['bet_sequence'][-1]) + 'from bet. ' + repr(time.time()) + '\n')
                         task['trial_stage'] = 'clear'
@@ -119,6 +139,10 @@ for trial in range(NUM_TRIALS):
 
                 # Handle pull and result
                 elif 'click' in buttons['pull'].handleEvent(event):
+                    leversound.play()
+                    c.wait_fun(100)
+                    leversound.stop()
+
                     if task['bet_size'][trial] >0:
                         c.log('Trial ' + str(trial) + ': Pulling wheels ' + repr(time.time()) + '\n')
                         c.log('Summary Trial' + str(trial) + ': Bet:' + str(task['bet_size'][trial]) + 'Account: ' + str([task['account'][trial]]))
@@ -129,29 +153,49 @@ for trial in range(NUM_TRIALS):
 
                 # Handle cashout
                 elif 'click' in buttons['cashout'].handleEvent(event):
+                    c.press_sound.play()
                     c.log('Trial ' + str(trial) + ': Cashing out ' + repr(time.time()) + '\n')
                     cashout(c, positions, buttons, sizes, task)
                     draw_screen(c, positions, buttons, sizes, task) 
                     
                 # Handle machine changes   
                 elif 'click' in buttons['mini_machine_0'].handleEvent(event):
+                    c.press_sound.play()
                     task['trial_stage'] = 'change_machine'
                     task['machine'] = task['all_machines'][0]
                     task['machine_sequence'][trial] = task['machine']
                     buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n')
                 elif 'click' in buttons['mini_machine_1'].handleEvent(event):
+                    c.press_sound.play()
                     task['trial_stage'] = 'change_machine'
                     task['machine'] = task['all_machines'][1]
                     task['machine_sequence'][trial] = task['machine']
                     buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n')
                 elif 'click' in buttons['mini_machine_2'].handleEvent(event):
+                    c.press_sound.play()
                     task['trial_stage'] = 'change_machine'
                     task['machine'] = task['all_machines'][2]
                     task['machine_sequence'][trial] = task['machine']
                     buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)    
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n') 
+
+            elif event.type in (KEYDOWN, KEYUP):
+                if event.key == K_SPACE:
+                    if 'click' in buttons['pull'].handleEvent(event):
+                        leversound.play()
+                        c.wait_fun(100)
+                        leversound.stop()
+
+                        if task['bet_size'][trial] >0:
+                            c.log('Trial ' + str(trial) + ': Pulling wheels ' + repr(time.time()) + '\n')
+                            c.log('Summary Trial' + str(trial) + ': Bet:' + str(task['bet_size'][trial]) + 'Account: ' + str([task['account'][trial]]))
+                            task['trial_stage'] = 'result'
+                            spin_wheels(c, positions, buttons, task)
+                            task = result(c,positions,buttons,sizes,task)
+                            next_trial = True
+
 
             elif event.type == pygame.QUIT:
                 pygame.quit()

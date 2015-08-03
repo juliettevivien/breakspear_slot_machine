@@ -70,7 +70,6 @@ class ChoiceTask():
         self.button_color     =  (  58, 138, 112)
         self.white            =  ( 255, 255, 255)
 
-        self.music = pygame.mixer.Sound('./sounds/surething.wav')
         self.press_sound = pygame.mixer.Sound('./sounds/buttonpress.wav')
         self.press_sound.set_volume(0.2)
         self.game_over_sound = pygame.mixer.Sound('./sounds/gameover.wav')
@@ -134,7 +133,6 @@ class ChoiceTask():
         textpos.centery = destsurf.centery+destsurfposy
         self.screen.blit(text,textpos)
   
-
     def text_screen(self,text,wait_time=0, font=None,font_color=None, valign='center', halign='center',x_displacement=0,y_displacement=0, maxwidth=int(screen_width*0.9)):
         # Text input should be raw text 
         if font is None:
@@ -217,7 +215,7 @@ class ChoiceTask():
         self.make_banner(self.header.render("Please enter your information below",True,self.header_color))
         question = "Name"
         current_string = []
-        self.text_input(question + ": " + string.join(current_string,""))
+        self.text_input(question + ":| " + string.join(current_string,""))
         
         # continue_button = pygbutton.PygButton(rect=(self.center_x-100,self.center_y, 200,100),\
         #  caption="Continue", fgcolor=self.button_color, bgcolor=self.background_color,  font=self.button)
@@ -229,26 +227,37 @@ class ChoiceTask():
 
         pygame.display.update()
         filling = True
-        while filling: 
-            for event in pygame.event.get():
-                if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN) and len(current_string)>0:
-                    if 'click' in continue_button.handleEvent(event): 
-                        filling=False
-                elif event.type == KEYDOWN:
-                    if event.key == K_BACKSPACE:
-                        current_string = current_string[0:-1]
-                    elif event.key == K_MINUS:
-                        current_string.append("_")
-                    elif event.key != 13:
-                        current_string.append(event.unicode)
-                elif event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                self.text_input(question + ": " + string.join(current_string,""))
+        while filling:
+            pygame.time.wait(20) 
+            if pygame.event.peek(MOUSEBUTTONDOWN) or pygame.event.peek(MOUSEBUTTONUP) or pygame.event.peek(QUIT) or pygame.event.peek(KEYDOWN):
+                for event in pygame.event.get():
+                    if event.type==MOUSEBUTTONDOWN and len(current_string)>0:
+                        continue_button.handleEvent(event)
+                    elif event.type==MOUSEBUTTONUP and len(current_string)>0:
+                        if 'click' in continue_button.handleEvent(event): 
+                            self.press_sound.play()
+                            filling=False
+                    elif event.type == KEYDOWN:
+                        if event.key == K_BACKSPACE:
+                            current_string = current_string[0:-1]
+                        elif event.key == K_MINUS:
+                            current_string.append("_")
+                        elif event.key != 13:
+                            current_string.append(event.unicode)
+                        elif event.key ==  K_RETURN:
+                            filling = False
+                    elif event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()
+                    self.text_input(question + ": " + string.join(current_string,""))
 
-            continue_button.draw(self.screen)
-            pygame.display.update()
-        self.wait_fun(milliseconds=300)
+                continue_button.draw(self.screen)
+                pygame.display.update()
+                # self.wait_fun(milliseconds=300)
+            elif 0 < round(time.time()*1000) % 700 < 350 and len(current_string)==0:
+                self.text_input(question + ": ")
+            elif 350 < round(time.time()*1000) % 700 < 700 and len(current_string)==0:
+                self.text_input(question + ":| ")
         return (string.join(current_string,""))
 
     def make_banner(self,text):
@@ -339,24 +348,28 @@ class ChoiceTask():
         # Choice phase
         playing = True
         while playing:
+            pygame.time.wait(20)
             for event in pygame.event.get():
                 if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                     pygame.quit()
 
                 if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN):
                     if button_txt2 is not None:
-                        if 'click' in left_button.handleEvent(event):                 
+                        if 'click' in left_button.handleEvent(event):   
+                            self.press_sound.play()               
                             self.log('Left button clicked \n')
                             button_clicked = ['left']
                             playing = False
                     if button_txt1 is not None:
                         if 'click' in right_button.handleEvent(event):
+                            self.press_sound.play() 
                             button_clicked = ['right']
                             self.log('Right button clicked \n')
                             playing = False
                 elif event.type == KEYDOWN:
                     pressedKey = pygame.key.name(event.key)
                     if pressedKey == 'left':
+                        self.press_sound.play() 
                         left_button.buttonDown = True;
                         left_button.draw(self.screen)
                         pygame.display.update()
@@ -364,6 +377,7 @@ class ChoiceTask():
                         self.wait_fun(200)
                         playing = False
                     elif pressedKey == 'right':
+                        self.press_sound.play() 
                         right_button.buttonDown = True;
                         right_button.draw(self.screen)
                         pygame.display.update()
@@ -403,13 +417,15 @@ class ChoiceTask():
         # Choice phase
         playing = True
         while playing:
+            pygame.time.wait(20)
             for event in pygame.event.get():
                 if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                     pygame.quit()
 
                 if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN):
                     if button_txt is not None:
-                        if 'click' in center_button.handleEvent(event):                 
+                        if 'click' in center_button.handleEvent(event):   
+                            self.press_sound.play()              
                             self.log('Left button clicked \n')
                             button_clicked = ['left']
                             playing = False

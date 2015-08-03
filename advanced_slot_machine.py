@@ -28,7 +28,9 @@ DARK_GRAY = ( 20, 20, 20)
 GOLD   = ( 254, 195,  13)
 
 
-leversound = pygame.mixer.Sound('./sounds/lever2.wav')
+leversound = pygame.mixer.Sound('./sounds/lever.wav')
+background_music = pygame.mixer.Sound('./sounds/machine1_music.wav')
+background_music.set_volume(0.1)
 
 c = ChoiceTask(background_color=DARK_GRAY, 
     title  = pygame.font.Font('./fonts/Lobster.ttf', 60),
@@ -37,8 +39,6 @@ c = ChoiceTask(background_color=DARK_GRAY,
     instruction = pygame.font.Font('./fonts/GenBasR.ttf',30),
     choice_text = pygame.font.Font('./fonts/GenBasR.ttf', 30),
     button = pygame.font.Font('./fonts/Oswald-Bold.ttf',30))
-
-
 
 (subjectname) = c.subject_information_screen()
 subject = subjectname.replace(" ","")
@@ -69,7 +69,8 @@ task = {'bet_size': np.zeros(NUM_TRIALS).astype('int'),
         'result_sequence': result_sequence,
         'machine_sequence': np.zeros(NUM_TRIALS).astype('int'),
         'reward_grade': np.zeros(NUM_TRIALS).astype('int'),
-        'winloss': np.zeros(NUM_TRIALS).astype('int')
+        'winloss': np.zeros(NUM_TRIALS).astype('int'),
+        'pressed_stop': np.zeros(NUM_TRIALS).astype('int'),
         }
 
 # Start with initial account and machine
@@ -80,15 +81,13 @@ task['machine'] = 1
 positions, buttons, sizes = get_screen_elements(c, task)
 
 for trial in range(NUM_TRIALS):    
+
     print trial
     next_trial = False
     if trial < 5:
         if trial == 0:
             begin_training_screen(c)
-    if trial == 5:
-        end_training_screen(c)
-        task['account'][trial] = 2000
-        welcome_screen(c)
+            background_music.play(100,0)
 
     # Click everything forward
     task['bet_sequence'] = []
@@ -97,13 +96,20 @@ for trial in range(NUM_TRIALS):
     if trial > 0:
         task['account'][trial] = task['account'][trial-1] 
 
+    if trial == 5:
+        background_music.stop()
+        end_training_screen(c)
+        task['account'][trial] = 2000
+        welcome_screen(c)
+        background_music.play(100,0)
+
     if int(str(result_sequence[trial])[0]) == 1:
         task['reward_grade'][trial] = int(str(result_sequence[trial])[1])
 
     if task['account'][trial] < 5:
         c.exit_screen("Unfortunately you lost your money and the game is over! Thanks for playing!", font=c.title, font_color=GOLD)
 
-
+    task['trial_stage'] = 'bet'
     buttons, task = draw_screen(c, positions, buttons, sizes, task)
 
     while not next_trial:  
@@ -127,7 +133,6 @@ for trial in range(NUM_TRIALS):
                     task = update_account(c,positions, sizes, task)
                     display_assets(c,positions,sizes,task)
                     c.log('Trial ' + str(trial) + ': Added 10 to bet. ' + repr(time.time()) + '\n')
-
                 elif 'click' in buttons['clear'].handleEvent(event):
                     c.press_sound.play()
                     if len(task['bet_sequence']) > 0:   
@@ -136,49 +141,58 @@ for trial in range(NUM_TRIALS):
                         task = clear(c,task)
                         task = update_account(c,positions, sizes, task)
                         display_assets(c,positions,sizes,task)
-
-                # Handle pull and result
                 elif 'click' in buttons['pull'].handleEvent(event):
-                    leversound.play()
-                    c.wait_fun(100)
-                    leversound.stop()
-
-                    if task['bet_size'][trial] >0:
+                    if task['bet_size'][trial] > 0:
+                        buttons['pull'].draw(c.screen)
+                        pygame.display.update()
+                        leversound.play()
+                        c.wait_fun(100)
+                        leversound.stop()
                         c.log('Trial ' + str(trial) + ': Pulling wheels ' + repr(time.time()) + '\n')
                         c.log('Summary Trial' + str(trial) + ': Bet:' + str(task['bet_size'][trial]) + 'Account: ' + str([task['account'][trial]]))
                         task['trial_stage'] = 'result'
                         spin_wheels(c, positions, buttons, task)
                         task = result(c,positions,buttons,sizes,task)
                         next_trial = True
-
                 # Handle cashout
-                elif 'click' in buttons['cashout'].handleEvent(event):
+                elif 'click' in buttons['cashout'].handleEvent(event) and trial > 4:
                     c.press_sound.play()
                     c.log('Trial ' + str(trial) + ': Cashing out ' + repr(time.time()) + '\n')
                     cashout(c, positions, buttons, sizes, task)
-                    draw_screen(c, positions, buttons, sizes, task) 
-                    
+                    draw_screen(c, positions, buttons, sizes, task)     
                 # Handle machine changes   
                 elif 'click' in buttons['mini_machine_0'].handleEvent(event):
                     c.press_sound.play()
+                    background_music.stop()
                     task['trial_stage'] = 'change_machine'
                     task['machine'] = task['all_machines'][0]
                     task['machine_sequence'][trial] = task['machine']
+                    background_music = pygame.mixer.Sound('./sounds/machine' + str(task['machine']) + '_music.wav')
+                    background_music.set_volume(0.2)
                     buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)
+                    background_music.play(100,0)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n')
                 elif 'click' in buttons['mini_machine_1'].handleEvent(event):
                     c.press_sound.play()
+                    background_music.stop()
                     task['trial_stage'] = 'change_machine'
                     task['machine'] = task['all_machines'][1]
                     task['machine_sequence'][trial] = task['machine']
+                    background_music = pygame.mixer.Sound('./sounds/machine' + str(task['machine']) + '_music.wav')
+                    background_music.set_volume(0.2)
                     buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)
+                    background_music.play(100,0)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n')
                 elif 'click' in buttons['mini_machine_2'].handleEvent(event):
                     c.press_sound.play()
+                    background_music.stop()
                     task['trial_stage'] = 'change_machine'
                     task['machine'] = task['all_machines'][2]
                     task['machine_sequence'][trial] = task['machine']
+                    background_music = pygame.mixer.Sound('./sounds/machine' + str(task['machine']) + '_music.wav')
+                    background_music.set_volume(0.2)
                     buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)    
+                    background_music.play(100,0)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n') 
 
             elif event.type in (KEYDOWN, KEYUP):

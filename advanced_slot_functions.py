@@ -62,15 +62,14 @@ machines['4'] = pygame.image.load('./images/slot_machines_4.png').convert_alpha(
 small_win = pygame.image.load('./images/symbols_smallwin.png').convert_alpha()
 big_win = pygame.image.load('./images/symbols_megawin.png').convert_alpha()
 
-spinsound = pygame.mixer.Sound('./sounds/spinning2.wav')
+
+# Pull in sounds:
+spinsound = pygame.mixer.Sound('./sounds/spinning.wav')
 spinsound.set_volume(0.2)
-
 winsound = pygame.mixer.Sound('./sounds/winsound.wav')
-winsound.set_volume(0.8)
-
+winsound.set_volume(0.5)
 bigwinsound = pygame.mixer.Sound('./sounds/bigwinsound.wav')
 bigwinsound.set_volume(0.3)
-
 spinstopsound = pygame.mixer.Sound('./sounds/spinstop.wav')
 spinstopsound.set_volume(0.7)
 
@@ -286,7 +285,6 @@ def draw_screen(c, positions, buttons, sizes, task):
     return buttons, task
 
 def update_account(c,positions, sizes, task):
-
     # Update the account to the new bet size
     if task['trial_stage'] == 'bet':
         task['account'][task['trial']] = task['account'][task['trial']] - task['bet_sequence'][-1]
@@ -318,12 +316,16 @@ def cashout(c, positions, buttons, sizes, task):
         pygame.display.update()
     elif button_clicked[0] == 'right':
         c.blank_screen()
-        c.text_screen('Leaving the casino!', font=c.title, font_color=GOLD, valign='top', y_displacement= -45, wait_time=2000)  
+        c.text_screen('Leaving the casino!', font=c.title, font_color=GOLD, valign='top', y_displacement= -45, wait_time=3000)  
+        c.text_screen('Entering the casino on a new day!', font=c.title, font_color=GOLD, valign='top', y_displacement= -45, wait_time=3000)  
         welcome_screen(c) 
         c.blank_screen()
+    
+
 
 def welcome_screen(c, wait_time=3000):
     c.blank_screen()
+    winsound.play()
     c.attn_screen(attn=tnu_casino,wait_time=wait_time)
 
 def instruction_screen(c):
@@ -354,11 +356,17 @@ def win_screen(c,positions, buttons, sizes, task):
     if task['reward_grade'][-1] < 8:
         numsparkle = 3  
         winnerblit = small_win
+        
     else:
         numsparkle = 5
         winnerblit = big_win
+        
 
     while counter < numsparkle:
+        if numsparkle == 5:
+            bigwinsound.play()
+        else:
+            winsound.play()
         c.screen.blit(pygame.transform.scale(winnerblit, (c.screen_width, c.screen_height)),(10,10))
         pygame.display.update()
         waitfun(800)
@@ -369,6 +377,7 @@ def win_screen(c,positions, buttons, sizes, task):
 
 def show_win_banner(c,positions,reward):
     c.screen.blit(win_banner,(positions['banner_x'],positions['banner_y'])) 
+    winsound.play()
     c.text_screen('You won ' + str(reward) + ' cents!!', font=c.title, valign='top', y_displacement= -45, wait_time=800)
 
 def gamble(c,task, positions, sizes):
@@ -413,22 +422,33 @@ def gamble(c,task, positions, sizes):
                     if int(task['result_sequence'][task['trial']][5]) == 1:
                         task['account'][task['trial']] = task['account'][task['trial']] + task['winloss'][task['trial']]
                         c.screen.blit(card_won,(x_pos,y_pos))
+                        gamble_button.draw(c.screen)
                         pygame.display.flip()
+                        winsound.play()
                         waitfun(1000)
-                        decided = True
-                        show_win_banner(c, positions, task['winloss'][task['trial']])
                         task['winloss'][task['trial']] = 2*task['winloss'][task['trial']]
+                        show_win_banner(c, positions, task['winloss'][task['trial']])
+                        winsound.play()
+                        decided = True
                     elif int(task['result_sequence'][task['trial']][5]) == 0:
+                        gamble_button.draw(c.screen)
+                        pygame.display.flip()
                         c.screen.blit(card_lost,(x_pos,y_pos))
                         pygame.display.flip()
                         waitfun(1000)
+                        task['winloss'][task['trial']] = 0
                         decided = True
                 elif 'click' in no_gamble_button.handleEvent(event):
-                    waitfun(300)
+                    no_gamble_button.draw(c.screen)
+                    pygame.display.update()
                     decided = True
             elif event.type == CARD:
                 c.screen.blit(cards[time_elapsed],(x_pos,y_pos))
                 pygame.display.flip()
+
+            gamble_button.draw(c.screen)
+            no_gamble_button.draw(c.screen)
+            pygame.display.update()
 
 def result(c,positions,buttons,sizes,task):
     wait = 190
@@ -436,63 +456,67 @@ def result(c,positions,buttons,sizes,task):
     c.screen.blit(symbols[task['result_sequence'][task['trial']][1]],(positions['machine']['x1'],positions['machine']['y']))
     pygame.display.flip()
     waitfun(wait)
+
     c.screen.blit(symbols[task['result_sequence'][task['trial']][2]],(positions['machine']['x2'],positions['machine']['y']))
     pygame.display.flip()
     waitfun(wait)
+
     c.screen.blit(symbols[task['result_sequence'][task['trial']][3]],(positions['machine']['x3'],positions['machine']['y']))
     pygame.display.flip()
     waitfun(500)
 
-    task = update_account(c,positions, sizes, task)
     if task['result_sequence'][task['trial']][0] == '1':
         task['reward_grade'][task['trial']] = int(task['result_sequence'][task['trial']][2])
-        reward = multiplier[task['reward_grade'][task['trial']]-1]*task['bet_size'][task['trial']] - task['bet_size'][task['trial']]
+        reward = multiplier[task['reward_grade'][task['trial']]-1]*task['bet_size'][task['trial']] 
+        #- task['bet_size'][task['trial']]
         task['winloss'][task['trial']] = reward
-        task['account'][task['trial']] = reward+task['account'][int(task['trial'])]
+        # task['account'][task['trial']] = reward+task['account'][int(task['trial'])]
         waitfun(wait)
         win_screen(c,positions, buttons, sizes, task)
         draw_screen(c, positions, buttons, sizes, task)
         show_win_banner(c,positions,reward)
     elif task['result_sequence'][task['trial']][0] == '0' or task['result_sequence'][0] == '2': # loss or near miss 
         task['reward_grade'][task['trial']] = 0
-        reward = -task['bet_size'][task['trial']]
-        task['winloss'][task['trial']] = reward
-        task['account'][task['trial']] = reward+task['account'][int(task['trial'])]
+        # reward = -task['bet_size'][task['trial']]
+        # task['winloss'][task['trial']] = reward
+        # task['account'][task['trial']] = reward+task['account'][int(task['trial'])]
         draw_screen(c, positions, buttons, sizes, task)
+
     if int(task['result_sequence'][task['trial']][4]) == 1:
         gamble(c, task, positions, sizes)
         draw_screen(c, positions, buttons, sizes, task)
+
+    task = update_account(c,positions, sizes, task)
     return task
 
 
 def spin_wheels(c, positions, buttons, task):
-
-    WHEEL1 = pygame.USEREVENT + 1
-    WHEEL2 = pygame.USEREVENT + 2
-    WHEEL3 = pygame.USEREVENT + 3
-
-    base_delay = 190
-    pygame.time.set_timer(WHEEL1, base_delay)
-    pygame.time.set_timer(WHEEL2, base_delay+10)
-    pygame.time.set_timer(WHEEL3, base_delay+20)
-    iterator = 0
-    pygame.event.clear()
-
-    
-    # i1 = 21
-    i1 = 70
-    o = 2
-    n = i1*4;
+    pygame.event.clear()    
+    n = 200
+    show1 = True
+    show2 = False
+    show3 = False
+    show4 = False
 
     counter = 0
     while counter < 20:
         spinsound.play(100,0)
         if pygame.event.peek([MOUSEBUTTONDOWN,KEYDOWN,MOUSEBUTTONUP,KEYUP]):
             for event in pygame.event.get():
-                if event.type in (MOUSEBUTTONDOWN,MOUSEBUTTONUP):
+                if event.type==MOUSEBUTTONDOWN:
+                    c.log('Trial ' + str(task['trial']) + ': Stopping wheels at ' + repr(time.time()) + '\n')
+                    buttons['stop'].handleEvent(event)
+                    buttons['stop'].draw(c.screen)
+                    pygame.display.update()
+                elif event.type==MOUSEBUTTONUP:
                     if 'click' in buttons['stop'].handleEvent(event):
+                        c.press_sound.play()
+                        buttons['pull'].handleEvent(event)
+                        buttons['pull'].draw(c.screen)
                         buttons['stop'].draw(c.screen)
+                        task['pressed_stop'][task['trial']] = 1;
                         pygame.display.update()
+                        c.wait_fun(100)
                         counter = 40
                 elif event.type == KEYDOWN and event.key == K_SPACE: 
                     buttons['stop'].handleEvent(event)
@@ -506,17 +530,43 @@ def spin_wheels(c, positions, buttons, task):
                     pygame.display.update()
                     counter = 40
         else:
-            if i1-o < round(time.time()*1000) % n < i1:
-                c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
+            # if 0 < round(time.time()*1000) % n < n/2 and show1:
+            #     c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x1'],positions['machine']['y']))
+            #     c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x2'],positions['machine']['y']))
+            #     c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x3'],positions['machine']['y']))
+            #     pygame.display.flip()
+            #     show1 = False
+            #     show2 = True
+            # elif n-10 < round(time.time()*1000) % n < n and show2:
+            #     c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
+            #     pygame.display.flip()
+            #     show1 = True
+            #     show2 = False
+
+            if 0 < round(time.time()*1000) % n < n/4 and show1:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x1'],positions['machine']['y']))
                 counter += 1
                 pygame.display.flip()
-            elif (i1*2)-o < round(time.time()*1000) % n < i1*2:
+                show1 = False;
+                show2 = True
+            elif n/4 < round(time.time()*1000) % n < n/2 and show2:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x2'],positions['machine']['y']))
                 pygame.display.flip()
-            elif (i1*3)-o < round(time.time()*1000) % n < i1*3:
+                show2 = False;
+                show3 = True
+            elif n/2 < round(time.time()*1000) % n < 3*n/4 and show3:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x3'],positions['machine']['y']))
                 pygame.display.flip()
+                show3 = False
+                show4 = True
+            elif n-10 < round(time.time()*1000) % n < n and show4:
+                c.screen.blit(machines[str(task['machine'])],(positions['machine']['base_x'],positions['machine']['base_y']))
+                if task['machine'] == 2:
+                    bet_label = c.title.render("Bet",True,RED) 
+                    c.screen.blit(bet_label,(positions['bet_screen_x']+5, positions['bet_screen_y']-60))
+                pygame.display.flip()
+                show4 = False
+                show1 = True
 
         spinsound.stop()
 

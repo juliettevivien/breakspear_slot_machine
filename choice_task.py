@@ -54,7 +54,6 @@ class ChoiceTask():
             self.body = pygame.font.Font('./fonts/OpenSans-Light.ttf',20)
             self.instruction = pygame.font.Font('./fonts/OpenSans.ttf',30)
             self.choice_text = pygame.font.Font('./fonts/OpenSans-Light.ttf',30)
-            pdb.set_trace()
         except:
             self.title = pygame.font.SysFont("Calibri",40)
             self.header = pygame.font.SysFont("Calibri",25)

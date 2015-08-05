@@ -317,6 +317,7 @@ def cashout(c, positions, buttons, sizes, task):
     elif button_clicked[0] == 'right':
         c.blank_screen()
         c.text_screen('Leaving the casino!', font=c.title, font_color=GOLD, valign='top', y_displacement= -45, wait_time=3000)  
+        c.blank_screen()
         c.text_screen('Entering the casino on a new day!', font=c.title, font_color=GOLD, valign='top', y_displacement= -45, wait_time=3000)  
         welcome_screen(c) 
         c.blank_screen()
@@ -378,7 +379,7 @@ def win_screen(c,positions, buttons, sizes, task):
 def show_win_banner(c,positions,reward):
     c.screen.blit(win_banner,(positions['banner_x'],positions['banner_y'])) 
     winsound.play()
-    c.text_screen('You won ' + str(reward) + ' cents!!', font=c.title, valign='top', y_displacement= -45, wait_time=800)
+    c.text_screen('You won ' + str(reward) + ' AUD!!', font=c.title, valign='top', y_displacement= -45, wait_time=800)
 
 def gamble(c,task, positions, sizes):
     card_back = pygame.image.load('./images/symbols_card_back.png').convert_alpha()

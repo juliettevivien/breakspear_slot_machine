@@ -155,6 +155,7 @@ for trial in range(NUM_TRIALS):
                         next_trial = True
                 # Handle cashout
                 elif 'click' in buttons['cashout'].handleEvent(event) and trial > 4:
+                    c.log('Deciding to cash out ' + str(task['trial']) +  ' ' + repr(time.time()) + '\n')
                     c.press_sound.play()
                     background_music.stop()
                     c.log('Trial ' + str(trial) + ': Cashing out ' + repr(time.time()) + '\n')

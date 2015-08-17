@@ -306,16 +306,18 @@ def clear(c,task):
     return task
 
 def cashout(c, positions, buttons, sizes, task):   
-     
+
     c.screen.fill(c.background_color)
     cashout_or_back = c.title.render("Cashout or go back to the game?", True, GOLD)
     c.center_text(cashout_or_back,y_offset=-100, center_x=c.center_x, center_y=c.center_y)
 
     button_clicked = c.choice_screen(button_txt1="Cashout", button_txt2="Go Back")
     if button_clicked[0] == 'left':
+        c.log('Did not cash out ' + str(task['trial']) +  ' ' + repr(time.time()) + '\n')
         draw_screen(c, positions, buttons, sizes, task)
         pygame.display.update()
     elif button_clicked[0] == 'right':
+        c.log('Cashing out ' + str(task['trial']) +  ' ' + repr(time.time()) + '\n')
         c.blank_screen()
         c.text_screen('Leaving the casino!', font=c.title, font_color=GOLD, valign='top', y_displacement= -45, wait_time=3000)  
         c.blank_screen()
@@ -422,6 +424,7 @@ def gamble(c,task, positions, sizes):
         for event in pygame.event.get():
             if event.type in (MOUSEBUTTONUP, MOUSEBUTTONDOWN):
                 if 'click' in gamble_button.handleEvent(event): 
+                    c.log('Decided to Gamble on trial ' + str(task['trial']) +  ' ' + repr(time.time()) + '\n')
                     if int(task['result_sequence'][task['trial']][5]) == 1:
                         task['account'][task['trial']] = task['account'][task['trial']] + task['winloss'][task['trial']]
                         c.screen.blit(card_won,(x_pos,y_pos))
@@ -442,6 +445,7 @@ def gamble(c,task, positions, sizes):
                         task['winloss'][task['trial']] = 0
                         decided = True
                 elif 'click' in no_gamble_button.handleEvent(event):
+                    c.log('Did not gamble on trial ' + str(task['trial']) +  ' ' + repr(time.time()) + '\n')
                     no_gamble_button.draw(c.screen)
                     pygame.display.update()
                     decided = True

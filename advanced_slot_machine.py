@@ -7,7 +7,6 @@ from advanced_slot_functions import *
 import random
 import numpy as np
 import slot_buttons
-import pdb
 from scipy.io import savemat
 
 # Define special characters
@@ -61,7 +60,7 @@ with open ('taskBackend.txt','r') as f:
 
 result_sequence = probability_trace.split(',')
 
-NUM_TRIALS = 200
+NUM_TRIALS = len(result_sequence)-1
 
 # Define dictionary of task attributes:
 task = {'bet_size': np.zeros(NUM_TRIALS).astype('int'),
@@ -103,8 +102,8 @@ for trial in range(NUM_TRIALS):
         welcome_screen(c)
         background_music.play(100,0)
 
-    if int(str(result_sequence[trial])[0]) == 1:
-        task['reward_grade'][trial] = int(str(result_sequence[trial])[1])
+    # if int(str(result_sequence[trial])[0]) == 1:
+    task['reward_grade'][trial] = int(str(result_sequence[trial])[1])
 
     if task['account'][trial] < 5:
         c.exit_screen("Unfortunately you lost your money and the game is over! Thanks for playing!", font=c.title, font_color=GOLD)
@@ -157,9 +156,11 @@ for trial in range(NUM_TRIALS):
                 # Handle cashout
                 elif 'click' in buttons['cashout'].handleEvent(event) and trial > 4:
                     c.press_sound.play()
+                    background_music.stop()
                     c.log('Trial ' + str(trial) + ': Cashing out ' + repr(time.time()) + '\n')
                     cashout(c, positions, buttons, sizes, task)
                     draw_screen(c, positions, buttons, sizes, task)     
+                    background_music.play(100,0)
                 # Handle machine changes   
                 elif 'click' in buttons['mini_machine_0'].handleEvent(event):
                     c.press_sound.play()
@@ -220,7 +221,8 @@ for trial in range(NUM_TRIALS):
             pygame.display.update()
 
 savemat(matlab_output_file,task)
-c.exit_screen("Thanks for playing!", font=c.title, font_color=GOLD)
+background_music.stop()
+c.exit_screen("That ends the game! Thank you so much for playing! Goodbye!", font=c.title, font_color=GOLD)
 
 
 

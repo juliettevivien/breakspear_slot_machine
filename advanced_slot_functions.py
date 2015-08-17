@@ -305,7 +305,8 @@ def clear(c,task):
             del task['bet_sequence'][-1]
     return task
 
-def cashout(c, positions, buttons, sizes, task):    
+def cashout(c, positions, buttons, sizes, task):   
+     
     c.screen.fill(c.background_color)
     cashout_or_back = c.title.render("Cashout or go back to the game?", True, GOLD)
     c.center_text(cashout_or_back,y_offset=-100, center_x=c.center_x, center_y=c.center_y)
@@ -354,7 +355,8 @@ def waitfun(milliseconds):
 
 def win_screen(c,positions, buttons, sizes, task):
     counter = 0
-    if task['reward_grade'][-1] < 8:
+
+    if task['reward_grade'][task['trial']] < 8:
         numsparkle = 3  
         winnerblit = small_win
         

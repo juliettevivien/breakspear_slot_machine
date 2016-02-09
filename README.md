@@ -1,1 +1,2 @@
-Advanced slot machine with paylines, continuous bets, more different machines, and full screen for all information on one plane.
+Production slot machine for Breakspear-TNU collaboration. Based on Paliwal, Petzschner et al. with increased stimuli, variable bet size, and 100 trials.
+

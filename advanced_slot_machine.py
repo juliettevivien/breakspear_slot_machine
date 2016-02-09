@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-    
 from __future__ import division
+
+
+currency = raw_input("Enter the currency of the game (AUD or points): ")
+if currency != 'AUD' and currency != 'points':
+    currency = raw_input("Please enter either AUD or points: ")
+
 from choice_task import ChoiceTask
 import pygame
 from pygame.locals import *
@@ -75,13 +81,13 @@ task = {'bet_size': np.zeros(NUM_TRIALS).astype('int'),
 # Start with initial account and machine
 task['account'][0] = 500
 task['machine'] = 1
-
+task['currency'] = currency
+ 
 # Set up initial screen 
 positions, buttons, sizes = get_screen_elements(c, task)
 
 for trial in range(NUM_TRIALS):    
 
-    print trial
     next_trial = False
     if trial < 5:
         if trial == 0:
@@ -106,6 +112,7 @@ for trial in range(NUM_TRIALS):
     task['reward_grade'][trial] = int(str(result_sequence[trial])[1])
 
     if task['account'][trial] < 5:
+        savemat(matlab_output_file,task)
         c.exit_screen("Unfortunately you lost your money and the game is over! Thanks for playing!", font=c.title, font_color=GOLD)
 
     task['trial_stage'] = 'bet'
@@ -153,8 +160,8 @@ for trial in range(NUM_TRIALS):
                         spin_wheels(c, positions, buttons, task)
                         task = result(c,positions,buttons,sizes,task)
                         next_trial = True
-                # Handle cashout
                 elif 'click' in buttons['cashout'].handleEvent(event) and trial > 4:
+                    print("Cashing out!")
                     c.log('Deciding to cash out ' + str(task['trial']) +  ' ' + repr(time.time()) + '\n')
                     c.press_sound.play()
                     background_music.stop()
@@ -171,7 +178,7 @@ for trial in range(NUM_TRIALS):
                     task['machine_sequence'][trial] = task['machine']
                     background_music = pygame.mixer.Sound('./sounds/machine' + str(task['machine']) + '_music.wav')
                     background_music.set_volume(0.2)
-                    buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)
+                    buttons, task = draw_screen(c, positions, buttons, sizes, task)
                     background_music.play(100,0)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n')
                 elif 'click' in buttons['mini_machine_1'].handleEvent(event):
@@ -182,7 +189,7 @@ for trial in range(NUM_TRIALS):
                     task['machine_sequence'][trial] = task['machine']
                     background_music = pygame.mixer.Sound('./sounds/machine' + str(task['machine']) + '_music.wav')
                     background_music.set_volume(0.2)
-                    buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)
+                    buttons, task = draw_screen(c, positions, buttons, sizes, task)
                     background_music.play(100,0)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n')
                 elif 'click' in buttons['mini_machine_2'].handleEvent(event):
@@ -193,7 +200,7 @@ for trial in range(NUM_TRIALS):
                     task['machine_sequence'][trial] = task['machine']
                     background_music = pygame.mixer.Sound('./sounds/machine' + str(task['machine']) + '_music.wav')
                     background_music.set_volume(0.2)
-                    buttons, all_machines = draw_screen(c, positions, buttons, sizes, task)    
+                    buttons, task = draw_screen(c, positions, buttons, sizes, task)    
                     background_music.play(100,0)
                     c.log('Trial ' + str(trial) + ': Changing machines to machine ' + str(task['machine_sequence'][trial]) + ' at ' + repr(time.time()) + '\n') 
 
@@ -211,15 +218,15 @@ for trial in range(NUM_TRIALS):
                             spin_wheels(c, positions, buttons, task)
                             task = result(c,positions,buttons,sizes,task)
                             next_trial = True
-
-
             elif event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-        
+
             for key in buttons:
                 buttons[key].draw(c.screen)
+
             pygame.display.update()
+            savemat(matlab_output_file,task)
 
 savemat(matlab_output_file,task)
 background_music.stop()

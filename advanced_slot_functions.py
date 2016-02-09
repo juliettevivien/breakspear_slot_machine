@@ -240,7 +240,10 @@ def display_assets(c,positions,sizes,task):
     account_screen_inside = pygame.Rect(positions['scoreboard_x']+1,positions['account_screen_y']+1,sizes['bbw']+33, 1.2*sizes['bbh']-2)
     pygame.draw.rect(c.screen,c.background_color,account_screen_inside,0)
 
-    account_banner = c.header.render("Account (AUD)",True,GOLD) 
+    if task['currency'] == 'AUD':
+        account_banner = c.header.render("Account (AUD)",True,GOLD) 
+    elif task['currency'] == 'points':
+        account_banner = c.header.render("Account (points)",True,GOLD) 
     c.screen.blit(account_banner, (positions['scoreboard_x'] + 10,positions['account_screen_y'] + 10))
     
     account_balance = money_font.render(str(task['account'][task['trial']]), True, RED)
@@ -359,16 +362,16 @@ def win_screen(c,positions, buttons, sizes, task):
     counter = 0
 
     if task['reward_grade'][task['trial']] < 8:
-        numsparkle = 3  
+        numsparkle = 1  
         winnerblit = small_win
         
     else:
-        numsparkle = 5
+        numsparkle = 2
         winnerblit = big_win
         
 
     while counter < numsparkle:
-        if numsparkle == 5:
+        if numsparkle == 2:
             bigwinsound.play()
         else:
             winsound.play()
@@ -380,10 +383,14 @@ def win_screen(c,positions, buttons, sizes, task):
 
     draw_screen(c, positions, buttons, sizes, task)
 
-def show_win_banner(c,positions,reward):
+def show_win_banner(c,positions,task,reward):
     c.screen.blit(win_banner,(positions['banner_x'],positions['banner_y'])) 
     winsound.play()
-    c.text_screen('You won ' + str(reward) + ' AUD!!', font=c.title, valign='top', y_displacement= -45, wait_time=800)
+    if task['currency'] == 'AUD':
+        c.text_screen('You won ' + str(reward) + ' AUD!!', font=c.title, valign='top', y_displacement= -45, wait_time=1000)
+    elif task['currency'] == 'points':
+        c.text_screen('You won ' + str(reward) + ' points!', font=c.title, valign='top', y_displacement= -45, wait_time=1000)
+
 
 def gamble(c,task, positions, sizes):
     card_back = pygame.image.load('./images/symbols_card_back.png').convert_alpha()
@@ -433,7 +440,7 @@ def gamble(c,task, positions, sizes):
                         winsound.play()
                         waitfun(1000)
                         task['winloss'][task['trial']] = 2*task['winloss'][task['trial']]
-                        show_win_banner(c, positions, task['winloss'][task['trial']])
+                        show_win_banner(c, positions,task, task['winloss'][task['trial']])
                         winsound.play()
                         decided = True
                     elif int(task['result_sequence'][task['trial']][5]) == 0:
@@ -481,7 +488,7 @@ def result(c,positions,buttons,sizes,task):
         waitfun(wait)
         win_screen(c,positions, buttons, sizes, task)
         draw_screen(c, positions, buttons, sizes, task)
-        show_win_banner(c,positions,reward)
+        show_win_banner(c,positions, task,reward)
     elif task['result_sequence'][task['trial']][0] == '0' or task['result_sequence'][0] == '2': # loss or near miss 
         task['reward_grade'][task['trial']] = 0
         # reward = -task['bet_size'][task['trial']]
@@ -554,7 +561,7 @@ def spin_wheels(c, positions, buttons, task):
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x1'],positions['machine']['y']))
                 counter += 1
                 pygame.display.flip()
-                show1 = False;
+                show1 = False
                 show2 = True
             elif n/4 < round(time.time()*1000) % n < n/2 and show2:
                 c.screen.blit(symbols[str(random.randint(1,9))],(positions['machine']['x2'],positions['machine']['y']))

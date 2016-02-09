@@ -6,7 +6,8 @@
 ### GET THINGS SET UP
 
 # Import libraries
-import pygame, os, time, string, pygbutton
+import pygame, os, time, string
+from slot_buttons import SlotButton as TaskButton
 from pygame.locals import *
 import numpy
 import random 
@@ -24,7 +25,7 @@ class ChoiceTask():
     screen_height = screen.get_height()
     # screen_width = 900
     # screen_height = 600
-    screen = pygame.display.set_mode((screen_width,screen_height))
+    # screen = pygame.display.set_mode((screen_width,screen_height))
 
     center_x = screen_width/2
     left_x = screen_width/20
@@ -35,6 +36,8 @@ class ChoiceTask():
     center_y = screen_height/2
     bottom_y = 2*screen_height/3
     banner_y = screen_height/6
+
+   
 
     def __init__(self, **kwds):
     
@@ -69,10 +72,12 @@ class ChoiceTask():
         self.button_color     =  (  58, 138, 112)
         self.white            =  ( 255, 255, 255)
 
+
         self.press_sound = pygame.mixer.Sound('./sounds/buttonpress.wav')
         self.press_sound.set_volume(0.2)
         self.game_over_sound = pygame.mixer.Sound('./sounds/gameover.wav')
 
+        self.RTB = False
 
         self.__dict__.update(kwds)
 
@@ -132,7 +137,7 @@ class ChoiceTask():
         textpos.centery = destsurf.centery+destsurfposy
         self.screen.blit(text,textpos)
   
-    def text_screen(self,text,wait_time=0, font=None,font_color=None, valign='center', halign='center',x_displacement=0,y_displacement=0, maxwidth=int(screen_width*0.9)):
+    def text_screen(self,text,wait_time=0, font=None,font_color=None, valign='center', halign='center',x_displacement=0,y_displacement=100, maxwidth=int(screen_width*0.9)):
         # Text input should be raw text 
         if font is None:
             font = self.instruction 
@@ -211,15 +216,12 @@ class ChoiceTask():
 
     def subject_information_screen(self):
 
-        self.make_banner(self.header.render("Please enter your information below",True,self.header_color))
+        self.make_banner(self.body.render("Please enter your information below",True,self.header_color))
         question = "Name"
         current_string = []
         self.text_input(question + ":| " + string.join(current_string,""))
         
-        # continue_button = pygbutton.PygButton(rect=(self.center_x-100,self.center_y, 200,100),\
-        #  caption="Continue", fgcolor=self.button_color, bgcolor=self.background_color,  font=self.button)
-        
-        continue_button= pygbutton.PygButton(rect=(self.center_x-100,self.center_y, 200,70),\
+        continue_button= TaskButton(rect=(self.center_x-120,self.center_y, 200,70),\
          caption="Continue",  bgcolor=self.button_color, fgcolor=self.background_color, font=self.button)
 
         continue_button.draw(self.screen)
@@ -323,18 +325,18 @@ class ChoiceTask():
 
         # Make buttons
         if button_txt1 is not None and button_txt2 is not None:
-            left_button = pygbutton.PygButton(rect=(self.left_center_x-70,self.bottom_y+70, 140,70),\
+            left_button = TaskButton(rect=(self.left_center_x-70,self.bottom_y+70, 140,70),\
              caption=button_txt2,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
-            right_button = pygbutton.PygButton(rect=(self.right_center_x-60,self.bottom_y+70, 140,70),\
+            right_button = TaskButton(rect=(self.right_center_x-60,self.bottom_y+70, 140,70),\
              caption=button_txt1, fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
             left_button.draw(self.screen)
             right_button.draw(self.screen)
         elif button_txt1 is not None and button_txt2 is None:
-            right_button = pygbutton.PygButton(rect=(self.center_x-60,self.bottom_y+70, 140,70),\
+            right_button = TaskButton(rect=(self.center_x-60,self.bottom_y+70, 140,70),\
              caption=button_txt1, fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
             right_button.draw(self.screen)
         elif button_txt2 is not None and button_txt1 is None:
-            left_button = pygbutton.PygButton(rect=(self.center_x-70,self.bottom_y+70, 140,70),\
+            left_button = TaskButton(rect=(self.center_x-70,self.bottom_y+70, 140,70),\
              caption=button_txt2,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
             left_button.draw(self.screen)
 
@@ -406,8 +408,8 @@ class ChoiceTask():
             self.text_screen(text=choice_text,font=self.choice_text,
                  maxwidth=int(self.screen_width/3),valign='bottom',halign='left',wait_time=None)
 
-        center_button = pygbutton.PygButton(rect=(self.center_x-70,self.bottom_y+160, 140,70),\
-             caption=button_txt,  fgcolor=self.background_color, bgcolor=self.button_color, font=self.button)
+        center_button = TaskButton(rect=(self.center_x-70,self.bottom_y+160, 140,70),\
+             caption=button_txt,  fgcolor=self.button_color, bgcolor=self.background_color, font=self.button)
 
         center_button.draw(self.screen)
         pygame.display.update()

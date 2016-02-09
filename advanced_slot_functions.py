@@ -346,7 +346,7 @@ def begin_training_screen(c):
 
 def end_training_screen(c):
     c.blank_screen()
-    c.text_screen('That''s the end of the training trials. The game will begin now! Good luck!', font=c.header, font_color=GOLD, valign='center', y_displacement= -45, wait_time=4000) 
+    c.text_screen('Training is now over. The game will begin now! Good luck!', font=c.header, font_color=GOLD, valign='center', y_displacement= -45, wait_time=4000) 
 
 
 def waitfun(milliseconds):

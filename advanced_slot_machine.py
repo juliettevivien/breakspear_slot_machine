@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-    
 from __future__ import division
 
-
 currency = raw_input("Enter the currency of the game (AUD or points): ")
-if currency != 'AUD' and currency != 'points':
+while currency.lower() != 'aud' and currency.lower() != 'points':
     currency = raw_input("Please enter either AUD or points: ")
 
 from choice_task import ChoiceTask

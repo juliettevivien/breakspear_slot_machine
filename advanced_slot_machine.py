@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-    
 from __future__ import division
 
-currency = raw_input("Enter the currency of the game (AUD or points): ")
-while currency.lower() != 'aud' and currency.lower() != 'points':
-    currency = raw_input("Please enter either AUD or points: ")
+# currency = raw_input("Enter the currency of the game (AUD or points): ")
+# while currency.lower() != 'aud' and currency.lower() != 'points':
+#     currency = raw_input("Please enter either AUD or points: ")
 
+
+currency = AUD
 from choice_task import ChoiceTask
 import pygame
 from pygame.locals import *
@@ -47,21 +49,17 @@ c = ChoiceTask(background_color=DARK_GRAY,
 (subjectname) = c.subject_information_screen()
 subject = subjectname.replace(" ","")
 matlab_output_file = c.create_output_file(subjectname)
+
+
+
 instruction_screen(c)
 welcome_screen(c)
 
+
 # Pull in probability trace:
-# Probability trace will have win/loss/near miss
+
 with open ('taskBackend.txt','r') as f:
     probability_trace = f.read().replace('\n', '')
-
-# Result sequence has the following positions:
-# 0. reward grade
-# 1. fruit 1
-# 2. fruit 2
-# 3. fruit 3
-# 4. gamble or not
-# 5. outcome of gamble
 
 result_sequence = probability_trace.split(',')
 
@@ -110,9 +108,9 @@ for trial in range(NUM_TRIALS):
     # if int(str(result_sequence[trial])[0]) == 1:
     task['reward_grade'][trial] = int(str(result_sequence[trial])[1])
 
-    if task['account'][trial] < 5:
-        savemat(matlab_output_file,task)
-        c.exit_screen("Unfortunately you lost your money and the game is over! Thanks for playing!", font=c.title, font_color=GOLD)
+    # if task['account'][trial] < 5:
+    #     savemat(matlab_output_file,task)
+    #     c.exit_screen("Unfortunately you lost your money and the game is over! Thanks for playing!", font=c.title, font_color=GOLD)
 
     task['trial_stage'] = 'bet'
     buttons, task = draw_screen(c, positions, buttons, sizes, task)

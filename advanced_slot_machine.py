@@ -6,7 +6,7 @@ from __future__ import division
 #     currency = raw_input("Please enter either AUD or points: ")
 
 
-currency = AUD
+currency = 'AUD'
 from choice_task import ChoiceTask
 import pygame
 from pygame.locals import *

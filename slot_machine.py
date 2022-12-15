@@ -6,9 +6,8 @@ from time import strftime,localtime
 
 from pygame.locals import *
 # Load all the variables and the screen from load_all
-from load_all import *
+#from load_all import *
 
-#from pygame.locals import *
 pygame.init()
 x = 0
 y = 0
@@ -356,7 +355,7 @@ def patient_information_screen():
         
     question = "Name"
     current_string = []
-    display_box(screen, question + ": " + string.join(current_string,""))
+    display_box(screen, question + ": " + "".join(current_string))
         
     trace1txt = capth20.render("Deutsch", True, black)
     trace2txt = capth20.render("English", True, black)
@@ -403,7 +402,7 @@ def patient_information_screen():
                 exit()
             display_box(screen, question + ": " + string.join(current_string,""))
 
-    return (string.join(current_string,""), deutsch) # this will utimately be the foldername
+    return ("".join(current_string), deutsch) # this will utimately be the foldername
 
     
 # Primary exit screen (for when the hot pink button is pressed)

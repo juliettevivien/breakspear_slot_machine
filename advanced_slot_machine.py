@@ -7,7 +7,7 @@ from __future__ import division
 
 
 currency = 'AUD'
-from choice_task import ChoiceTask
+from choice_task import *
 import pygame
 from pygame.locals import *
 from advanced_slot_functions import *
@@ -46,7 +46,7 @@ c = ChoiceTask(background_color=DARK_GRAY,
     choice_text = pygame.font.Font('./fonts/GenBasR.ttf', 30),
     button = pygame.font.Font('./fonts/Oswald-Bold.ttf',30))
 
-(subjectname) = c.subject_information_screen()
+subjectname = c.subject_information_screen()
 subject = subjectname.replace(" ","")
 matlab_output_file = c.create_output_file(subjectname)
 

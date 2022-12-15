@@ -20,6 +20,7 @@ from pygame import gfxdraw
 class ChoiceTask():
 
     # Define a full-screen display for the paradigm
+    pygame.display.init()
     screen = pygame.display.set_mode((pygame.display.Info().current_w,pygame.display.Info().current_h))
     screen_width = screen.get_width()
     screen_height = screen.get_height()
@@ -222,7 +223,7 @@ class ChoiceTask():
         self.make_banner(self.body.render("Please enter your information below",True,self.header_color))
         question = "Name"
         current_string = []
-        self.text_input(question + ":| " + string.join(current_string,""))
+        self.text_input(question + ":| " + "".join(current_string))
         
         continue_button= TaskButton(rect=(self.center_x-120,self.center_y, 200,70),\
          caption="Continue",  bgcolor=self.button_color, fgcolor=self.background_color, font=self.button)
@@ -242,18 +243,18 @@ class ChoiceTask():
                             self.press_sound.play()
                             filling=False
                     elif event.type == KEYDOWN:
-                        if event.key == K_BACKSPACE:
+                        if pygame.key == K_BACKSPACE:
                             current_string = current_string[0:-1]
-                        elif event.key == K_MINUS:
+                        elif pygame.key == K_MINUS:
                             current_string.append("_")
-                        elif event.key != 13:
+                        elif pygame.key != 13:
                             current_string.append(event.unicode)
-                        elif event.key ==  K_RETURN:
+                        elif pygame.key ==  K_RETURN:
                             filling = False
                     elif event.type == pygame.QUIT:
                         pygame.quit()
                         exit()
-                    self.text_input(question + ": " + string.join(current_string,""))
+                    self.text_input(question + ": " + "".join(current_string)) #important to display what the user is typing
 
                 continue_button.draw(self.screen)
                 pygame.display.update()
@@ -262,7 +263,7 @@ class ChoiceTask():
                 self.text_input(question + ": ")
             elif 350 < round(time.time()*1000) % 700 < 700 and len(current_string)==0:
                 self.text_input(question + ":| ")
-        return (string.join(current_string,""))
+
 
     def make_banner(self,text):
         textpos = text.get_rect()
@@ -354,7 +355,7 @@ class ChoiceTask():
         while playing:
             pygame.time.wait(20)
             for event in pygame.event.get():
-                if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                if event.type == QUIT or (event.type == KEYDOWN and pygame.key == K_ESCAPE):
                     pygame.quit()
 
                 if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN):
@@ -371,7 +372,7 @@ class ChoiceTask():
                             self.log('Right button clicked \n')
                             playing = False
                 elif event.type == KEYDOWN:
-                    pressedKey = pygame.key.name(event.key)
+                    pressedKey = pygame.key.name(pygame.key)
                     if pressedKey == 'left':
                         self.press_sound.play() 
                         left_button.buttonDown = True;
@@ -423,7 +424,7 @@ class ChoiceTask():
         while playing:
             pygame.time.wait(20)
             for event in pygame.event.get():
-                if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                if event.type == QUIT or (event.type == KEYDOWN and pygame.key == K_ESCAPE):
                     pygame.quit()
 
                 if event.type in (MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN):
